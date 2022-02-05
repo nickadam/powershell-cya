@@ -20,7 +20,7 @@ function Get-Sha256Hash {
   $Sha256 = [System.Security.Cryptography.HashAlgorithm]::Create("sha256")
 
   if($File){
-    $File = Get-Item $File
+    $File = Get-Item $File -ErrorAction Stop
     if($Salt){
       $FileBytes = [System.IO.File]::ReadAllBytes($File)
       $SaltBytes = [System.Text.Encoding]::UTF8.getBytes($Salt)
@@ -41,6 +41,13 @@ function Get-Sha256Hash {
   }
 }
 
+function Get-Base64FromFile {
+  param($File)
+  $File = Get-Item $File -ErrorAction Stop
+  $FileBytes = [System.IO.File]::ReadAllBytes($File)
+  [System.Convert]::ToBase64String($FileBytes)
+}
+
 function Get-RandomString {
   param($Length=64)
   $chars = "ABCDEFGHKLMNOPRSTUVWXYZabcdefghiklmnoprstuvwxyz0123456789".toCharArray()
@@ -52,29 +59,70 @@ function Get-SecureStringText {
   (New-Object PSCredential ".",$SecureString).GetNetworkCredential().Password
 }
 
-function Get-Key {
-  param($CyaPassword, $Password)
-  Get-DecryptedAnsibleVault -Path (Get-CyaPassword -Name $CyaPassword) -Password $Password
-}
-
 function Get-EncryptedAnsibleVaultString {
   param($String, $Key)
   $Password = ConvertTo-SecureString -String $Key -AsPlainText
-  $TempFile = New-TemporaryFile
-  Get-EncryptedAnsibleVault -Value $String -Password $Password | Out-File -Encoding Default $TempFile
-  $FileBytes = [System.IO.File]::ReadAllBytes($TempFile)
-  Remove-Item $TempFile
-  [System.Convert]::ToBase64String($FileBytes)
+  Get-EncryptedAnsibleVault -Value $String -Password $Password #  | Out-File -Encoding Default $TempFile
 }
 
 function Get-DecryptedAnsibleVaultString {
   param($CipherTextString, $Key)
   $Password = ConvertTo-SecureString -String $Key -AsPlainText
   $TempFile = New-TemporaryFile
-  $FileBytes = [System.Convert]::FromBase64String($CipherTextString)
-  [System.IO.File]::WriteAllBytes($TempFile, $FileBytes)
+  $CipherTextString | Out-File -Encoding Default $TempFile
   Get-DecryptedAnsibleVault -Path $TempFile -Password $Password
   Remove-Item $TempFile
+}
+
+function ConvertFrom-Cipherbundle {
+  [CmdletBinding()]
+  param([Parameter(ValueFromPipeline)]$Cipherbundle, $Key)
+  if($Cipherbundle.Type -eq "String"){
+    Get-DecryptedAnsibleVaultString -CipherTextString $Cipherbundle.Ciphertext -Key $Key
+  }
+  if($Cipherbundle.Type -eq "File"){
+    $FilePath = $Cipherbundle.FilePath
+    if(Test-Path $FilePath -PathType Leaf){
+      Write-Error "File $FilePath already exists" -ErrorAction Stop
+    }else{
+      $Base64 = Get-DecryptedAnsibleVaultString -CipherTextString $Cipherbundle.Ciphertext -Key $Key
+      $FileBytes = [System.Convert]::FromBase64String($Base64)
+      [System.IO.File]::WriteAllBytes($FilePath, $FileBytes)
+      Get-Item $FilePath
+    }
+  }
+}
+
+function ConvertTo-Cipherbundle {
+  [CmdletBinding()]
+  param([Parameter(ValueFromPipeline)]$Item, $Key)
+  if($Item.GetType().Name -eq "FileInfo"){
+    $Salt = Get-RandomString
+    $Hash = Get-Sha256Hash -File $Item -Salt $Salt
+    $Base64 = Get-Base64FromFile -File $Item
+    $Ciphertext = Get-EncryptedAnsibleVaultString -String $Base64 -Key $Key
+    [PSCustomObject]@{
+      "Type" = "File"
+      "FilePath" = $Item.FullName
+      "Salt" = $Salt
+      "Hash" = $Hash
+      "Ciphertext" = $Ciphertext
+    }
+  }
+  if($Item.GetType().Name -eq "String"){
+    [PSCustomObject]@{
+      "Type" = "String"
+      "Ciphertext" = Get-EncryptedAnsibleVaultString -String $Item -Key $Key
+    }
+  }
+}
+
+function Confirm-CipherbundleFileHash {
+  [CmdletBinding()]
+  param([Parameter(ValueFromPipeline)]$Cipherbundle)
+  $Salt = $Cipherbundle.Salt
+  $Hash = Get-Sha256Hash -File $Cipherbundle.FilePath -Salt $Salt
+  $Hash -eq $Cipherbundle.Hash
 }
 
 $VaultPath = Join-Path -Path $Home -ChildPath ".cya"
@@ -144,6 +192,11 @@ function New-CyaConfig {
     $EnvVarValue,
     $EnvVarSecureString,
     $EnvVarCollection,
+    $File,
+
+    [ValidateSet($True, $False)]
+    $ProtectOnExit,
+
     $CyaPassword="Default"
   )
 
@@ -222,9 +275,9 @@ function New-CyaConfig {
       return
     }
 
-    Write-Host -NoNewline "Enter password for `"$CyaPassword`" CyaPassword: "
+    Write-Host -NoNewline "Enter password for CyaPassword `"$CyaPassword`": "
     $Password = Read-Host -AsSecureString
-    $Key = Get-Key -CyaPassword $CyaPassword -Password $Password
+    $Key = Get-DecryptedAnsibleVault -Path (Get-CyaPassword -Name $CyaPassword) -Password $Password
 
     # convert hashtable to list of objects
     $EnvVarCollectionList = @()
@@ -276,6 +329,57 @@ function New-CyaConfig {
 
   if($Type -eq "File"){
 
+    if($ProtectOnExit -eq $Null){
+      $Options = [System.Management.Automation.Host.ChoiceDescription[]] @("&Yes", "&No")
+      $Message = "Would you like to automatically run Protect-CyaConfig (deletes unencrypted config files) on this config when unloading the Cya module or exiting powershell?"
+      $Option = $host.UI.PromptForChoice("Protect on exit:", $Message, $Options, 0)
+      Switch($Option){
+        0 { $ProtectOnExit = $True}
+        1 { $ProtectOnExit = $False}
+      }
+    }
+
+    # no files specified, prompt user
+    if(-not $File){
+      $File = @()
+      $Collecting = $True
+      $n = 0
+      while($Collecting){
+        $n++
+        Write-Host -NoNewline "File $n path (Enter when done): "
+        $FilePath = Read-Host
+        if($FilePath){
+          if(-not (Test-Path $FilePath -PathType Leaf)){
+            Write-Error -Message "File $FilePath not found" -ErrorAction Stop
+          }
+          $File += $FilePath
+        }else{
+          $Collecting = $False
+        }
+      }
+    }
+    $FileCollection = @()
+    $File | ForEach {
+      $FileItem = Get-Item $File
+      $FileCollection += $FileItem.FullName
+    }
+
+    # nothing to do
+    if(-not $FileCollection){
+      return
+    }
+
+    if($FileCollection.length -eq 1){
+      $CyaConfig = [PSCustomObject]@{
+        "Type" = "File"
+        "Files" = @($FileCollection)
+      }
+    }else{
+      $CyaConfig = [PSCustomObject]@{
+        "Type" = "File"
+        "Files" = $FileCollection
+      }
+    }
   }
 }
 
