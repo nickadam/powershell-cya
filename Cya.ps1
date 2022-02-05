@@ -77,7 +77,7 @@ function Get-DecryptedAnsibleVaultString {
   Remove-Item $TempFile
 }
 
-$VaultPath = Join-Path -Path $Home -ChildPath ".config-vault"
+$VaultPath = Join-Path -Path $Home -ChildPath ".cya"
 $PasswordsPath = Join-Path -Path $VaultPath -ChildPath "passwords"
 $ConfigsPath = Join-Path -Path $VaultPath -ChildPath "configs"
 
@@ -126,7 +126,7 @@ function Get-CyaPassword {
     if(Test-Path $PasswordPath -PathType Leaf){
       Get-Item $PasswordPath
     }else{
-      Write-Error -Message "CyaPassword `"$Name`" does not exist"
+      Write-Error -Message "CyaPassword `"$Name`" not found"
     }
   }else{
     Get-ChildItem $PasswordsPath
@@ -171,7 +171,7 @@ function New-CyaConfig {
     Write-Error -Message "Config name is required" -ErrorAction Stop
   }
 
-  $ConfigPath = Join-Path -Path $ConfigsPath -ChildPath "$Name.json"
+  $ConfigPath = Join-Path -Path $ConfigsPath -ChildPath $Name
 
   # Check if config already exists
   if(Test-Path $ConfigPath){
@@ -256,13 +256,11 @@ function New-CyaConfig {
 
     if($CyaConfigEnvVarCollection.length -eq 1){
       $CyaConfig = [PSCustomObject]@{
-        "Name" = $Name
         "Type" = "EnvVar"
         "Variables" = @($CyaConfigEnvVarCollection)
       }
     }else{
       $CyaConfig = [PSCustomObject]@{
-        "Name" = $Name
         "Type" = "EnvVar"
         "Variables" = $CyaConfigEnvVarCollection
       }
@@ -273,10 +271,64 @@ function New-CyaConfig {
     }
 
     $CyaConfig | ConvertTo-Json | Out-File -Encoding Default $ConfigPath
-    Get-Item $ConfigPath
+    Get-CyaConfig -Name $Name
   }
 
   if($Type -eq "File"){
 
+  }
+}
+
+function Get-CyaConfig {
+  [CmdletBinding()]
+  param($Name)
+  if(-not (Test-Path $ConfigsPath)){
+    return
+  }
+
+  function Get-Config {
+    [CmdletBinding()]
+    param([Parameter(ValueFromPipeline)]$Config)
+    $Type = $Config.Type
+    $ProtectOnExit = $Config.ProtectOnExit
+    $Variables = ''
+    $Files = ''
+    if($Type -eq "EnvVar"){
+      $ProtectOnExit = $True
+      $Variables = $Config.Variables.Name
+    }
+    [PSCustomObject]@{
+      "Type" = $Type
+      "ProtectOnExit" = $ProtectOnExit
+      "Variables" = $Variables
+      "Files" = $Files
+    }
+  }
+  if($Name){
+    $ConfigPath = Join-Path -Path $ConfigsPath -ChildPath $Name
+    if(Test-Path $ConfigPath -PathType Leaf){
+      $Config = Get-Content $ConfigPath | ConvertFrom-Json | Get-Config
+      [PSCustomObject]@{
+        "Name" = $Name
+        "Type" = $Config.Type
+        "ProtectOnExit" = $Config.ProtectOnExit
+        "Variables" = $Config.Variables
+        "Files" = $Config.Files
+      }
+    }else{
+      Write-Error -Message "CyaConfig `"$Name`" not found"
+    }
+  }else{
+    Get-ChildItem $ConfigsPath | ForEach {
+      $Name = $_.Name
+      $Config = $_ | Get-Content | ConvertFrom-Json | Get-Config
+      [PSCustomObject]@{
+        "Name" = $Name
+        "Type" = $Config.Type
+        "ProtectOnExit" = $Config.ProtectOnExit
+        "Variables" = $Config.Variables
+        "Files" = $Config.Files
+      }
+    }
   }
 }
