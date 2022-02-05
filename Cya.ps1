@@ -51,7 +51,11 @@ function Get-Base64FromFile {
 function Get-RandomString {
   param($Length=64)
   $chars = "ABCDEFGHKLMNOPRSTUVWXYZabcdefghiklmnoprstuvwxyz0123456789".toCharArray()
-  ($chars | Get-Random -Count $Length) -join ""
+  $String = ""
+  while($String.Length -lt $Length){
+    $String += $chars | Get-Random
+  }
+  $String
 }
 
 function Get-SecureStringText {

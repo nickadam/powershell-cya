@@ -1,5 +1,27 @@
 . .\Cya.ps1
 
+$Test = "Get-RandomString -Length"
+$Expected = 128
+$Actual = (Get-RandomString -Length 128).length
+if($Actual -ne $Expected){
+  Write-Error "$Test failed."
+  "Expected - $Expected"
+  "Actual - $Actual"
+  " "
+}
+
+
+$Test = "Get-RandomString"
+$Expected = 64
+$Actual = (Get-RandomString).length
+if($Actual -ne $Expected){
+  Write-Error "$Test failed."
+  "Expected - $Expected"
+  "Actual - $Actual"
+  " "
+}
+
+
 $Test = "Get-Base64FromFile -File"
 $Expected = "VGhpcyBpcyBhIHRlc3QNCg=="
 $TempFile = New-TemporaryFile
