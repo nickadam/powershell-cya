@@ -1,5 +1,33 @@
 . .\Cya.ps1
 
+$Test = "ConvertTo-Cipherbundle ConvertFrom-Cipherbundle File"
+$Expected = "This is a test"
+$TempFile = New-TemporaryFile
+"This is a test" | Out-File -Encoding Default $TempFile
+$Cipherbundle = $TempFile | ConvertTo-Cipherbundle -Key "this is a key"
+Remove-Item $TempFile
+$Cipherbundle | ConvertFrom-Cipherbundle -Key "this is a key" | Out-Null
+$Actual = Get-Content $TempFile
+Remove-Item $TempFile
+if($Actual -ne $Expected){
+  Write-Error "$Test failed."
+  "Expected - $Expected"
+  "Actual - $Actual"
+  " "
+}
+
+
+$Test = "ConvertTo-Cipherbundle ConvertFrom-Cipherbundle String"
+$Expected = "this is a string"
+$Actual = "this is a string" | ConvertTo-Cipherbundle -Key "this is a key" | ConvertFrom-Cipherbundle -Key "this is a key"
+if($Actual -ne $Expected){
+  Write-Error "$Test failed."
+  "Expected - $Expected"
+  "Actual - $Actual"
+  " "
+}
+
+
 $Test = "Get-EncryptedAnsibleVaultString Get-DecryptedAnsibleVaultString"
 $Expected = "this is a string"
 $Actual = Get-DecryptedAnsibleVaultString -CipherTextString (Get-EncryptedAnsibleVaultString -String "this is a string" -Key "this is a key") -Key "this is a key"
