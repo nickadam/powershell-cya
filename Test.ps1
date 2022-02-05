@@ -1,5 +1,16 @@
 . .\Cya.ps1
 
+$Test = "Get-EncryptedAnsibleVaultString Get-DecryptedAnsibleVaultString"
+$Expected = "this is a string"
+$Actual = Get-DecryptedAnsibleVaultString -CipherTextString (Get-EncryptedAnsibleVaultString -String "this is a string" -Key "this is a key") -Key "this is a key"
+if($Actual -ne $Expected){
+  Write-Error "$Test failed."
+  "Expected - $Expected"
+  "Actual - $Actual"
+  " "
+}
+
+
 $Test = "Get-SecureStringText from pipeline"
 $Expected = "this is a string"
 $Actual = ConvertTo-SecureString -String "this is a string" -AsPlainText | Get-SecureStringText
