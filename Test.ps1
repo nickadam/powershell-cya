@@ -1,5 +1,19 @@
 . .\Cya.ps1
 
+$Test = "Get-Base64FromFile -File"
+$Expected = "VGhpcyBpcyBhIHRlc3QNCg=="
+$TempFile = New-TemporaryFile
+"This is a test" | Out-File -Encoding Default $TempFile
+$Actual = Get-Base64FromFile -File $TempFile
+Remove-Item $TempFile
+if($Actual -ne $Expected){
+  Write-Error "$Test failed."
+  "Expected - $Expected"
+  "Actual - $Actual"
+  " "
+}
+
+
 $Test = "Get-Sha256Hash -File"
 $Expected = "07849dc26fcbb2f3bd5f57bdf214bae374575f1bd4e6816482324799417cb379"
 $TempFile = New-TemporaryFile
