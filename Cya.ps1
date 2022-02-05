@@ -42,7 +42,8 @@ function Get-Sha256Hash {
 }
 
 function Get-Base64FromFile {
-  param($File)
+  [CmdletBinding()]
+  param([Parameter(ValueFromPipeline)]$File)
   $File = Get-Item $File -ErrorAction Stop
   $FileBytes = [System.IO.File]::ReadAllBytes($File)
   [System.Convert]::ToBase64String($FileBytes)
@@ -59,7 +60,8 @@ function Get-RandomString {
 }
 
 function Get-SecureStringText {
-  param($SecureString)
+  [CmdletBinding()]
+  param([Parameter(ValueFromPipeline)]$SecureString)
   (New-Object PSCredential ".",$SecureString).GetNetworkCredential().Password
 }
 
