@@ -2,7 +2,6 @@
 
 # Set-CyaPassword ??? reset lots of work
 # Remove-CyaPassword
-# Rename-CyaPassword
 #
 # Set-CyaConfig -OldPath -NewPath
 # Protect-CyaConfig (on exit)
@@ -239,7 +238,7 @@ function Get-CyaPassword {
     if(Test-Path $PasswordPath -PathType Leaf){
       Get-Item $PasswordPath
     }else{
-      Write-Error -Message "CyaPassword `"$Name`" not found"
+      Write-Error -Message "CyaPassword `"$Name`" not found" -ErrorAction Stop
     }
   }else{
     Get-ChildItem $PasswordsPath
@@ -744,7 +743,7 @@ function Rename-CyaConfig {
   $OldPath = Join-Path -Path $ConfigsPath -ChildPath $Name
   $NewPath = Join-Path -Path $ConfigsPath -ChildPath $NewName
   if(Test-Path $NewPath){
-    Write-Error "CyaConfig name `"$NewName`" conflicts with existing CyaConfig"
+    Write-Error "CyaConfig name `"$NewName`" conflicts with existing CyaConfig" -ErrorAction Stop
   }
   mv $OldPath $NewPath
 }
@@ -757,4 +756,31 @@ function Remove-CyaConfig {
   $Config = Get-CyaConfig -Name $Name
   $Path = Join-Path -Path $ConfigsPath -ChildPath $Name
   rm $Path
+}
+
+function Rename-CyaPassword {
+  param(
+    [Parameter(Mandatory=$true)]
+    $Name,
+
+    [Parameter(Mandatory=$true)]
+    $NewName
+  )
+  $CyaPassword = Get-CyaPassword -Name $Name
+  $OldPath = Join-Path -Path $PasswordsPath -ChildPath $Name
+  $NewPath = Join-Path -Path $PasswordsPath -ChildPath $NewName
+  if(Test-Path $NewPath){
+    Write-Error "CyaPassword name `"$NewName`" conflicts with existing CyaPassword" -ErrorAction Stop
+  }
+
+  # update all relevant CyaConfigs CyaPassword name
+  ForEach($File in (Get-ChildItem $ConfigsPath)){
+    $CyaConfig = $File | Get-Content | ConvertFrom-Json -Depth 3
+    if($CyaConfig.CyaPassword -eq $Name){
+      $CyaConfig.CyaPassword = $NewName
+      $CyaConfig | ConvertTo-Json -Depth 3 | Out-File -Encoding Default $File
+    }
+  }
+
+  mv $OldPath $NewPath
 }
