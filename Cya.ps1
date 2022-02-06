@@ -721,7 +721,7 @@ function Protect-CyaConfig {
 
       # unset variables
       if($Config.Type -eq "EnvVar"){
-        ForEach($Variable in $Configs.Variables.Name){
+        ForEach($Variable in $Config.Variables.Name){
           [System.Environment]::SetEnvironmentVariable($Variable,"")
         }
       }
