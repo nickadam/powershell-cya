@@ -1,12 +1,9 @@
 # Ciphertext Your Assets
 
-# New-CyaPassword
-# Get-CyaPassword
-# Set-CyaPassword
+# Set-CyaPassword ??? reset lots of work
 # Remove-CyaPassword
 # Rename-CyaPassword
 #
-# New-CyaConfig
 # Get-CyaConfig
 # Set-CyaConfig -OldPath -NewPath
 # Rename-CyaConfig
@@ -107,7 +104,7 @@ function ConvertFrom-Cipherbundle {
 
 function ConvertTo-Cipherbundle {
   [CmdletBinding()]
-  param([Parameter(ValueFromPipeline)]$Item, $Key)
+  param([Parameter(ValueFromPipeline)]$Item, $Key, $Name)
   process {
     if($Item.GetType().Name -eq "FileInfo"){
       $Salt = Get-RandomString
@@ -123,9 +120,25 @@ function ConvertTo-Cipherbundle {
       }
     }
     if($Item.GetType().Name -eq "String"){
+      $Salt = Get-RandomString
+      $Hash = Get-Sha256Hash -String $Item -Salt $Salt
       [PSCustomObject]@{
+        "Name" = $Name
         "Type" = "String"
+        "Salt" = $Salt
+        "Hash" = $Hash
         "Ciphertext" = Get-EncryptedAnsibleVaultString -String $Item -Key $Key
+      }
+    }
+    if($Item.GetType().Name -eq "PSCustomObject"){
+      $Salt = Get-RandomString
+      $Hash = Get-Sha256Hash -String $Item.Value -Salt $Salt
+      [PSCustomObject]@{
+        "Name" = $Item.Name
+        "Type" = "String"
+        "Salt" = $Salt
+        "Hash" = $Hash
+        "Ciphertext" = Get-EncryptedAnsibleVaultString -String $Item.Value -Key $Key
       }
     }
   }
@@ -139,12 +152,35 @@ function Confirm-CipherbundleFileHash {
   $Hash -eq $Cipherbundle.Hash
 }
 
+function Confirm-CipherbundleStringHash {
+  param($Cipherbundle)
+  $Name = $Cipherbundle.Name
+  $Salt = $Cipherbundle.Salt
+  $String = Get-EnvVarValueByName -Name $Name
+  if(-not $String){
+    return $False
+  }
+  $Hash = Get-Sha256Hash -String $String -Salt $Salt
+  $Hash -eq $Cipherbundle.Hash
+}
+
 function Get-EnvVarValueByName {
   param($Name)
   Get-ChildItem Env: | ForEach {
     if($_.Name -eq $Name){
       $_.Value
     }
+  }
+}
+
+function Get-ProtectionStatus {
+  param($Cipherbundle)
+  if($Cipherbundle.Type -eq "File"){
+    $File = Get-Item $File -ErrorAction SilentlyContinue
+    if(-not $File){
+      return "Protected"
+    }
+    #if(Confirm-CipherbundleFileHash )
   }
 }
 
@@ -221,6 +257,7 @@ function New-CyaConfig {
     $ProtectOnExit,
 
     $CyaPassword="Default"
+    # TODO $Password
   )
 
   if(-not (Get-CyaPassword -Name $CyaPassword -EA SilentlyContinue)){
@@ -324,19 +361,7 @@ function New-CyaConfig {
       $EnvVarCollection = $EnvVarCollectionList
     }
 
-    $CyaConfigEnvVarCollection = @()
-    $EnvVarCollection | ForEach {
-      $EnvVarName = $_.Name
-      $EnvVarValue = $_.Value
-      $EnvVarSecureString = $_.SecureString
-      if($EnvVarSecureString){
-        $EnvVarValue = Get-SecureStringText -SecureString $EnvVarSecureString
-      }
-      $CyaConfigEnvVarCollection += [PSCustomObject]@{
-        "Name" = $EnvVarName
-        "Ciphertext" = ConvertTo-Cipherbundle -Item $EnvVarValue -Key $Key
-      }
-    }
+    $CyaConfigEnvVarCollection = $EnvVarCollection | ConvertTo-Cipherbundle -Key $Key
 
     if($CyaConfigEnvVarCollection.length -eq 1){
       $CyaConfig = [PSCustomObject]@{
@@ -432,7 +457,7 @@ function New-CyaConfig {
   }
 
   # write config file
-  $CyaConfig | ConvertTo-Json -Depth 4 | Out-File -Encoding Default $ConfigPath
+  $CyaConfig | ConvertTo-Json -Depth 3 | Out-File -Encoding Default $ConfigPath
   Get-CyaConfig -Name $Name
 }
 
@@ -479,7 +504,7 @@ function Get-CyaConfig {
     if($Name -and ($ConfigName -ne $Name)){
       Continue
     }
-    $Config = $Config | Get-Content | ConvertFrom-Json -Depth 4 | Get-Config
+    $Config = $Config | Get-Content | ConvertFrom-Json -Depth 3 | Get-Config
     [PSCustomObject]@{
       "Name" = $ConfigName
       "Type" = $Config.Type
