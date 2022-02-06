@@ -265,8 +265,8 @@ function New-CyaConfig {
     [ValidateSet($True, $False)]
     $ProtectOnExit,
 
-    $CyaPassword="Default"
-    # TODO $Password
+    $CyaPassword="Default",
+    $Password
   )
 
   if(-not (Get-CyaPassword -Name $CyaPassword -EA SilentlyContinue)){
@@ -352,8 +352,10 @@ function New-CyaConfig {
       return
     }
 
-    Write-Host -NoNewline "Enter password for CyaPassword `"$CyaPassword`": "
-    $Password = Read-Host -AsSecureString
+    if(-not $Password){
+      Write-Host -NoNewline "Enter password for CyaPassword `"$CyaPassword`": "
+      $Password = Read-Host -AsSecureString
+    }
     $Key = Get-DecryptedAnsibleVault -Path (Get-CyaPassword -Name $CyaPassword) -Password $Password
 
     # convert hashtable to list of objects
@@ -436,8 +438,10 @@ function New-CyaConfig {
     }
 
     # get the key
-    Write-Host -NoNewline "Enter password for CyaPassword `"$CyaPassword`": "
-    $Password = Read-Host -AsSecureString
+    if(-not $Password){
+      Write-Host -NoNewline "Enter password for CyaPassword `"$CyaPassword`": "
+      $Password = Read-Host -AsSecureString
+    }
     $Key = Get-DecryptedAnsibleVault -Path (Get-CyaPassword -Name $CyaPassword) -Password $Password
 
     # # encrypt all the files
