@@ -1,5 +1,64 @@
 . .\Cya.ps1
 
+$Test = "Get-ProtectionStatus EnvVar Protected"
+$Expected = "Protected"
+$TempVar = [PSCustomObject]@{"Name" = "cyatestvar"; "Value" = "this is a string"}
+$Cipherbundle = $TempVar | ConvertTo-Cipherbundle -Key "this is a key"
+$Env:cyatestvar = "this is a different string"
+$Actual = ($Cipherbundle | Get-ProtectionStatus).Status
+if($Actual -ne $Expected){
+  Write-Error "$Test failed."
+  "Expected - $Expected"
+  "Actual - $Actual"
+  " "
+}
+
+
+$Test = "Get-ProtectionStatus EnvVar Unprotected"
+$Expected = "Unprotected"
+$TempVar = [PSCustomObject]@{"Name" = "cyatestvar"; "Value" = "this is a string"}
+$Cipherbundle = $TempVar | ConvertTo-Cipherbundle -Key "this is a key"
+$Env:cyatestvar = "this is a string"
+$Actual = ($Cipherbundle | Get-ProtectionStatus).Status
+if($Actual -ne $Expected){
+  Write-Error "$Test failed."
+  "Expected - $Expected"
+  "Actual - $Actual"
+  " "
+}
+
+
+$Test = "Get-ProtectionStatus File Protected"
+$Expected = "Protected"
+$TempFile = New-TemporaryFile
+"This is a test" | Out-File -Encoding Default $TempFile
+$Cipherbundle = $TempFile | ConvertTo-Cipherbundle -Key "this is a key"
+"This is a different file" | Out-File -Encoding Default $TempFile
+$Actual = ($Cipherbundle | Get-ProtectionStatus).Status
+Remove-Item $TempFile
+if($Actual -ne $Expected){
+  Write-Error "$Test failed."
+  "Expected - $Expected"
+  "Actual - $Actual"
+  " "
+}
+
+
+$Test = "Get-ProtectionStatus File Unprotected"
+$Expected = "Unprotected"
+$TempFile = New-TemporaryFile
+"This is a test" | Out-File -Encoding Default $TempFile
+$Cipherbundle = $TempFile | ConvertTo-Cipherbundle -Key "this is a key"
+$Actual = ($Cipherbundle | Get-ProtectionStatus).Status
+Remove-Item $TempFile
+if($Actual -ne $Expected){
+  Write-Error "$Test failed."
+  "Expected - $Expected"
+  "Actual - $Actual"
+  " "
+}
+
+
 $Test = "Confirm-CipherbundleFileHash Fails"
 $Expected = $False
 $TempFile = New-TemporaryFile
@@ -81,7 +140,7 @@ if($Actual -ne $Expected){
 
 $Test = "ConvertTo-Cipherbundle ConvertFrom-Cipherbundle String"
 $Expected = "this is a string"
-$Actual = "this is a string" | ConvertTo-Cipherbundle -Key "this is a key" | ConvertFrom-Cipherbundle -Key "this is a key"
+$Actual = [PSCustomObject]@{"Name" = "test"; "Value" = "this is a string"} | ConvertTo-Cipherbundle -Key "this is a key" | ConvertFrom-Cipherbundle -Key "this is a key"
 if($Actual -ne $Expected){
   Write-Error "$Test failed."
   "Expected - $Expected"

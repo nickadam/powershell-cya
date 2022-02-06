@@ -85,7 +85,7 @@ function ConvertFrom-Cipherbundle {
   [CmdletBinding()]
   param([Parameter(ValueFromPipeline)]$Cipherbundle, $Key)
   process {
-    if($Cipherbundle.Type -eq "String"){
+    if($Cipherbundle.Type -eq "EnvVar"){
       Get-DecryptedAnsibleVaultString -CipherTextString $Cipherbundle.Ciphertext -Key $Key
     }
     if($Cipherbundle.Type -eq "File"){
@@ -119,23 +119,12 @@ function ConvertTo-Cipherbundle {
         "Ciphertext" = $Ciphertext
       }
     }
-    if($Item.GetType().Name -eq "String"){
-      $Salt = Get-RandomString
-      $Hash = Get-Sha256Hash -String $Item -Salt $Salt
-      [PSCustomObject]@{
-        "Name" = $Name
-        "Type" = "String"
-        "Salt" = $Salt
-        "Hash" = $Hash
-        "Ciphertext" = Get-EncryptedAnsibleVaultString -String $Item -Key $Key
-      }
-    }
     if($Item.GetType().Name -eq "PSCustomObject"){
       $Salt = Get-RandomString
       $Hash = Get-Sha256Hash -String $Item.Value -Salt $Salt
       [PSCustomObject]@{
+        "Type" = "EnvVar"
         "Name" = $Item.Name
-        "Type" = "String"
         "Salt" = $Salt
         "Hash" = $Hash
         "Ciphertext" = Get-EncryptedAnsibleVaultString -String $Item.Value -Key $Key
@@ -152,8 +141,9 @@ function Confirm-CipherbundleFileHash {
   $Hash -eq $Cipherbundle.Hash
 }
 
-function Confirm-CipherbundleStringHash {
-  param($Cipherbundle)
+function Confirm-CipherbundleEnvVarHash {
+  [CmdletBinding()]
+  param([Parameter(ValueFromPipeline)]$Cipherbundle)
   $Name = $Cipherbundle.Name
   $Salt = $Cipherbundle.Salt
   $String = Get-EnvVarValueByName -Name $Name
@@ -174,13 +164,32 @@ function Get-EnvVarValueByName {
 }
 
 function Get-ProtectionStatus {
-  param($Cipherbundle)
-  if($Cipherbundle.Type -eq "File"){
-    $File = Get-Item $File -ErrorAction SilentlyContinue
-    if(-not $File){
-      return "Protected"
+  [CmdletBinding()]
+  param([Parameter(ValueFromPipeline)]$Cipherbundle)
+  process{
+    $Status = "Protected"
+    if($Cipherbundle.Type -eq "File"){
+      if(Get-Item $Cipherbundle.FilePath -ErrorAction SilentlyContinue){
+        if($Cipherbundle | Confirm-CipherbundleFileHash){
+          $Status = "Unprotected"
+        }
+      }
+      [PSCustomObject]@{
+        "Type" = $Cipherbundle.Type
+        "FilePath" = $Cipherbundle.FilePath
+        "Status" = $Status
+      }
     }
-    #if(Confirm-CipherbundleFileHash )
+    if($Cipherbundle.Type -eq "EnvVar"){
+      if($Cipherbundle | Confirm-CipherbundleEnvVarHash){
+        $Status = "Unprotected"
+      }
+      [PSCustomObject]@{
+        "Type" = $Cipherbundle.Type
+        "Name" = $Cipherbundle.FilePath
+        "Status" = $Status
+      }
+    }
   }
 }
 
