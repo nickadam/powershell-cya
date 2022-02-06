@@ -241,6 +241,7 @@ function Get-CyaPassword {
 
 function New-CyaConfig {
   param(
+    [Parameter(Mandatory=$true)]
     $Name,
 
     [ValidateSet("EnvVar", "File")]
@@ -264,6 +265,14 @@ function New-CyaConfig {
     New-CyaPassword -Name $CyaPassword
   }
 
+  # Attempt to set $Type
+  if($EnvVarName -or $EnvVarCollection){
+    $Type = "EnvVar"
+  }
+  if($File){
+    $Type = "File"
+  }
+
   # Show option for type
   if(-not $Type){
     $Options = [System.Management.Automation.Host.ChoiceDescription[]] @("&EnvVar", "&File")
@@ -272,15 +281,6 @@ function New-CyaConfig {
       0 { $Type = "EnvVar"}
       1 { $Type = "File"}
     }
-  }
-
-  # get the name
-  if(-not $Name){
-    Write-Host -NoNewline "Config name: "
-    $Name = Read-Host
-  }
-  if(-not $Name){
-    Write-Error -Message "Config name is required" -ErrorAction Stop
   }
 
   $ConfigPath = Join-Path -Path $ConfigsPath -ChildPath $Name
