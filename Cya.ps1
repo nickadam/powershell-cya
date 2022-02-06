@@ -4,12 +4,10 @@
 # Remove-CyaPassword
 # Rename-CyaPassword
 #
-# Get-CyaConfig
 # Set-CyaConfig -OldPath -NewPath
 # Rename-CyaConfig
 # Remove-CyaConfig
 # Protect-CyaConfig
-# Unprotect-CyaConfig
 
 function Get-Sha256Hash {
   param($File, $String, $Salt)
@@ -200,6 +198,12 @@ $ConfigsPath = Join-Path -Path $VaultPath -ChildPath "configs"
 function New-CyaPassword {
   param($Name="Default", $Password)
 
+  $PasswordPath = Join-Path -Path $PasswordsPath -ChildPath $Name
+
+  if(Test-Path $PasswordPath){
+    Write-Error -Message "Password $Name already exists" -ErrorAction Stop
+  }
+
   $password1 = ""
   while(-not $password1){
     Write-Host -NoNewline "Enter new password: "
@@ -216,12 +220,6 @@ function New-CyaPassword {
 
   if($password1 -ne $password2){
     Write-Error -Message "Passwords do not match" -ErrorAction Stop
-  }
-
-  $PasswordPath = Join-Path -Path $PasswordsPath -ChildPath $Name
-
-  if(Test-Path $PasswordPath){
-    Write-Error -Message "Password $Name already exists" -ErrorAction Stop
   }
 
   if(-not (Test-Path $PasswordsPath)){
@@ -561,6 +559,110 @@ function Get-CyaConfig {
           }
         }
       }
+    }
+  }
+}
+
+function Unprotect-CyaConfig {
+  [CmdletBinding()]
+  param(
+    [Parameter(ValueFromPipeline)]
+    $CyaConfig,
+
+    $Name,
+    $Password
+  )
+  begin {
+    $Configs = @()
+  }
+  process {
+    $Config = $False
+    if($Name){
+      $Config = Get-CyaConfig -Name $Name
+    }
+    if($CyaConfig){
+      $Config = $CyaConfig
+    }
+    if($Config){
+      $Configs += $Config
+    }
+  }
+  end{
+    # nothing provided, get all configs
+    if(-not $CyaConfig -and -not $Name){
+      $Configs = Get-CyaConfig
+    }
+
+    # nothing to do
+    if(-not $Configs){
+      return
+    }
+
+    # if file exists and protected, stop we have a conflict
+    ForEach($Config in $Configs){
+      $ConfigPath = Join-Path -Path $ConfigsPath -ChildPath $Config.Name
+      $Config = Get-Item $ConfigPath | Get-Content | ConvertFrom-Json -Depth 3
+      if($Config.Type -eq "File"){
+        ForEach($Cipherbundle in $Config.Files){
+          $FilePath = $Cipherbundle.FilePath
+          if(Test-Path $FilePath){
+            $ProtectionStatus = $Cipherbundle | Get-ProtectionStatus
+            if($ProtectionStatus.Status -eq "Protected"){
+              $Message = "Conflicting file `"$FilePath`" exists. " +
+                "The file may have been modified since it was last protected. " +
+                "Delete or rename the file to resolve the conflict."
+              Write-Error $Message -ErrorAction Stop
+            }
+          }
+        }
+      }
+    }
+
+    # Get all keys
+    $CyaPasswords = ($Configs.CyaPassword | Group).Name
+    $Keys = @{}
+    ForEach($CyaPassword in $CyaPasswords){
+      if($Password){
+        $Key = Get-DecryptedAnsibleVault -Path (Get-CyaPassword -Name $CyaPassword) -Password (Read-Host -AsSecureString)
+        $Keys[$CyaPassword] = $Key
+      }else{
+        Write-Host -NoNewline "Enter password for CyaPassword `"$CyaPassword`": "
+        $Key = Get-DecryptedAnsibleVault -Path (Get-CyaPassword -Name $CyaPassword) -Password (Read-Host -AsSecureString)
+        $Keys[$CyaPassword] = $Key
+      }
+    }
+
+    # change the environment!
+    ForEach($Config in $Configs){
+      $ConfigPath = Join-Path -Path $ConfigsPath -ChildPath $Config.Name
+      $Config = Get-Item $ConfigPath | Get-Content | ConvertFrom-Json -Depth 3
+      if($Config.Type -eq "File"){
+        ForEach($Cipherbundle in $Config.Files){
+          $FilePath = $Cipherbundle.FilePath
+
+          # already there
+          if(Test-Path $FilePath){
+            Continue
+          }
+
+          # make directory
+          $Directory = Split-Path $FilePath
+          mkdir -p $Directory -ErrorAction SilentlyContinue | Out-Null
+
+          # write file
+          $Cipherbundle | ConvertFrom-Cipherbundle -Key $Keys[$Config.CyaPassword] | Out-Null
+        }
+      }
+
+      # set environment variables
+      if($Config.Type -eq "EnvVar"){
+        $Config.Variables | ConvertFrom-Cipherbundle -Key $Keys[$Config.CyaPassword] | Out-Null
+      }
+    }
+
+    # Show protection status
+    ForEach($Config in $Configs){
+      Get-CyaConfig -Name $Config.Name -Status
     }
   }
 }
