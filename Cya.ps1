@@ -5,7 +5,6 @@
 # Rename-CyaPassword
 #
 # Set-CyaConfig -OldPath -NewPath
-# Remove-CyaConfig
 # Protect-CyaConfig (on exit)
 
 function Get-Sha256Hash {
@@ -748,4 +747,14 @@ function Rename-CyaConfig {
     Write-Error "CyaConfig name `"$NewName`" conflicts with existing CyaConfig"
   }
   mv $OldPath $NewPath
+}
+
+function Remove-CyaConfig {
+  param(
+    [Parameter(Mandatory=$true)]
+    $Name
+  )
+  $Config = Get-CyaConfig -Name $Name
+  $Path = Join-Path -Path $ConfigsPath -ChildPath $Name
+  rm $Path
 }
