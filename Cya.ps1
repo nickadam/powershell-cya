@@ -309,18 +309,20 @@ function New-CyaConfig {
       }
       $CyaConfigEnvVarCollection += [PSCustomObject]@{
         "Name" = $EnvVarName
-        "Ciphertext" = Get-EncryptedAnsibleVaultString -String $EnvVarValue -Key $Key
+        "Ciphertext" = ConvertTo-Cipherbundle -Item $EnvVarValue -Key $Key
       }
     }
 
     if($CyaConfigEnvVarCollection.length -eq 1){
       $CyaConfig = [PSCustomObject]@{
         "Type" = "EnvVar"
+        "CyaPassword" = $CyaPassword
         "Variables" = @($CyaConfigEnvVarCollection)
       }
     }else{
       $CyaConfig = [PSCustomObject]@{
         "Type" = "EnvVar"
+        "CyaPassword" = $CyaPassword
         "Variables" = $CyaConfigEnvVarCollection
       }
     }
@@ -329,7 +331,7 @@ function New-CyaConfig {
       mkdir -p $ConfigsPath | Out-Null
     }
 
-    $CyaConfig | ConvertTo-Json | Out-File -Encoding Default $ConfigPath
+    $CyaConfig | ConvertTo-Json -Depth 4 | Out-File -Encoding Default $ConfigPath
     Get-CyaConfig -Name $Name
   }
 
@@ -409,36 +411,34 @@ function Get-CyaConfig {
     }
     [PSCustomObject]@{
       "Type" = $Type
+      "CyaPassword" = $Config.CyaPassword
       "ProtectOnExit" = $ProtectOnExit
       "Variables" = $Variables
       "Files" = $Files
     }
   }
+
+  # error if not found
   if($Name){
     $ConfigPath = Join-Path -Path $ConfigsPath -ChildPath $Name
-    if(Test-Path $ConfigPath -PathType Leaf){
-      $Config = Get-Content $ConfigPath | ConvertFrom-Json | Get-Config
-      [PSCustomObject]@{
-        "Name" = $Name
-        "Type" = $Config.Type
-        "ProtectOnExit" = $Config.ProtectOnExit
-        "Variables" = $Config.Variables
-        "Files" = $Config.Files
-      }
-    }else{
-      Write-Error -Message "CyaConfig `"$Name`" not found"
+    if(-not (Test-Path $ConfigPath -PathType Leaf)){
+      Write-Error -Message "CyaConfig `"$Name`" not found" -ErrorAction Stop
     }
-  }else{
-    Get-ChildItem $ConfigsPath | ForEach {
-      $Name = $_.Name
-      $Config = $_ | Get-Content | ConvertFrom-Json | Get-Config
-      [PSCustomObject]@{
-        "Name" = $Name
-        "Type" = $Config.Type
-        "ProtectOnExit" = $Config.ProtectOnExit
-        "Variables" = $Config.Variables
-        "Files" = $Config.Files
-      }
+  }
+
+  ForEach($Config in Get-ChildItem $ConfigsPath){
+    $ConfigName = $Config.Name
+    if($Name -and ($ConfigName -ne $Name)){
+      Continue
+    }
+    $Config = $Config | Get-Content | ConvertFrom-Json -Depth 4 | Get-Config
+    [PSCustomObject]@{
+      "Name" = $ConfigName
+      "Type" = $Config.Type
+      "CyaPassword" = $Config.CyaPassword
+      "ProtectOnExit" = $Config.ProtectOnExit
+      "Variables" = $Config.Variables
+      "Files" = $Config.Files
     }
   }
 }
