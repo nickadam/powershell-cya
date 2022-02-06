@@ -320,7 +320,9 @@ function New-CyaConfig {
 
     if(-not (Get-CyaPassword -Name $CyaPassword -EA SilentlyContinue)){
       Write-Warning "CyaPassword `"$CyaPassword`" password not found, creating now with New-CyaPassword."
-      $Password = Get-NewPassword
+      if(!$Password){
+        $Password = Get-NewPassword
+      }
       New-CyaPassword -Name $CyaPassword -Password $Password
     }
 
