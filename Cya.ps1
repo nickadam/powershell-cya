@@ -139,6 +139,15 @@ function Confirm-CipherbundleFileHash {
   $Hash -eq $Cipherbundle.Hash
 }
 
+function Get-EnvVarValueByName {
+  param($Name)
+  Get-ChildItem Env: | ForEach {
+    if($_.Name -eq $Name){
+      $_.Value
+    }
+  }
+}
+
 $VaultPath = Join-Path -Path $Home -ChildPath ".cya"
 $PasswordsPath = Join-Path -Path $VaultPath -ChildPath "passwords"
 $ConfigsPath = Join-Path -Path $VaultPath -ChildPath "configs"
@@ -270,9 +279,17 @@ function New-CyaConfig {
         Write-Host -NoNewline "Variable $n name (Enter when done): "
         $EnvVarName = Read-Host
         if($EnvVarName){
-          Write-Host -NoNewline "$EnvVarName value: "
+          $SetValue = Get-EnvVarValueByName -Name $EnvVarName
+          if($SetValue){
+            Write-Host -NoNewline "$EnvVarName value [$SetValue]: "
+          }else{
+            Write-Host -NoNewline "$EnvVarName value : "
+          }
           $EnvVarSecureString = Read-Host -AsSecureString
           $EnvVarValue = Get-SecureStringText -SecureString $EnvVarSecureString
+          if($SetValue -and (-not $EnvVarValue)){
+            $EnvVarValue = $SetValue
+          }
           $EnvVar = [PSCustomObject]@{
             "Name" = $EnvVarName
             "Value" = $EnvVarValue
