@@ -5,7 +5,6 @@
 # Rename-CyaPassword
 #
 # Set-CyaConfig -OldPath -NewPath
-# Rename-CyaConfig
 # Remove-CyaConfig
 # Protect-CyaConfig (on exit)
 
@@ -732,4 +731,21 @@ function Protect-CyaConfig {
       Get-CyaConfig -Name $Config.Name -Status
     }
   }
+}
+
+function Rename-CyaConfig {
+  param(
+    [Parameter(Mandatory=$true)]
+    $Name,
+
+    [Parameter(Mandatory=$true)]
+    $NewName
+  )
+  $Config = Get-CyaConfig -Name $Name
+  $OldPath = Join-Path -Path $ConfigsPath -ChildPath $Name
+  $NewPath = Join-Path -Path $ConfigsPath -ChildPath $NewName
+  if(Test-Path $NewPath){
+    Write-Error "CyaConfig name `"$NewName`" conflicts with existing CyaConfig"
+  }
+  mv $OldPath $NewPath
 }
