@@ -1,5 +1,21 @@
 # Ciphertext Your Assets
 
+function Get-CyaPasswordPath {
+  $Base = Join-Path -Path $Home -ChildPath ".cya"
+  if($Env:CYAPATH){
+    $Base = $Env:CYAPATH
+  }
+  return Join-Path -Path $Base -ChildPath "passwords"
+}
+
+function Get-CyaConfigPath {
+  $Base = Join-Path -Path $Home -ChildPath ".cya"
+  if($Env:CYAPATH){
+    $Base = $Env:CYAPATH
+  }
+  return Join-Path -Path $Base -ChildPath "configs"
+}
+
 function Get-Sha256Hash {
   param($File, $String, $Salt)
 
@@ -183,19 +199,7 @@ function Get-ProtectionStatus {
   }
 }
 
-$VaultPath = Join-Path -Path $Home -ChildPath ".cya"
-$PasswordsPath = Join-Path -Path $VaultPath -ChildPath "passwords"
-$ConfigsPath = Join-Path -Path $VaultPath -ChildPath "configs"
-
-function New-CyaPassword {
-  param($Name="Default", $Password)
-
-  $PasswordPath = Join-Path -Path $PasswordsPath -ChildPath $Name
-
-  if(Test-Path $PasswordPath){
-    Write-Error -Message "Password $Name already exists" -ErrorAction Stop
-  }
-
+function Get-NewPassword {
   $password1 = ""
   while(-not $password1){
     Write-Host -NoNewline "Enter new password: "
@@ -213,9 +217,24 @@ function New-CyaPassword {
   if($password1 -ne $password2){
     Write-Error -Message "Passwords do not match" -ErrorAction Stop
   }
+  return $Password
+}
 
-  if(-not (Test-Path $PasswordsPath)){
-    mkdir -p $PasswordsPath | Out-Null
+function New-CyaPassword {
+  param($Name="Default", $Password)
+
+  $PasswordPath = Join-Path -Path (Get-CyaPasswordPath) -ChildPath $Name
+
+  if(Test-Path $PasswordPath){
+    Write-Error -Message "Password $Name already exists" -ErrorAction Stop
+  }
+
+  if(!$Password){
+    $Password = Get-NewPassword
+  }
+
+  if(-not (Test-Path (Get-CyaPasswordPath))){
+    mkdir -p (Get-CyaPasswordPath) | Out-Null
   }
 
   Get-EncryptedAnsibleVault -Value (Get-RandomString) -Password $Password | Out-File -Encoding Default $PasswordPath
@@ -224,18 +243,18 @@ function New-CyaPassword {
 function Get-CyaPassword {
   [CmdletBinding()]
   param($Name)
-  if(-not (Test-Path $PasswordsPath)){
+  if(-not (Test-Path (Get-CyaPasswordPath))){
     return
   }
   if($Name){
-    $PasswordPath = Join-Path -Path $PasswordsPath -ChildPath $Name
+    $PasswordPath = Join-Path -Path (Get-CyaPasswordPath) -ChildPath $Name
     if(Test-Path $PasswordPath -PathType Leaf){
       Get-Item $PasswordPath
     }else{
-      Write-Error -Message "CyaPassword `"$Name`" not found" -ErrorAction Stop
+      Write-Error -Message "CyaPassword `"$Name`" not found"
     }
   }else{
-    Get-ChildItem $PasswordsPath
+    Get-ChildItem (Get-CyaPasswordPath)
   }
 }
 
@@ -301,7 +320,8 @@ function New-CyaConfig {
 
     if(-not (Get-CyaPassword -Name $CyaPassword -EA SilentlyContinue)){
       Write-Warning "CyaPassword `"$CyaPassword`" password not found, creating now with New-CyaPassword."
-      New-CyaPassword -Name $CyaPassword
+      $Password = Get-NewPassword
+      New-CyaPassword -Name $CyaPassword -Password $Password
     }
 
     # Attempt to set $Type
@@ -330,7 +350,7 @@ function New-CyaConfig {
       }
     }
 
-    $ConfigPath = Join-Path -Path $ConfigsPath -ChildPath $Name
+    $ConfigPath = Join-Path -Path (Get-CyaConfigPath) -ChildPath $Name
 
     # Check if config already exists
     if(Test-Path $ConfigPath){
@@ -425,8 +445,8 @@ function New-CyaConfig {
         }
       }
 
-      if(-not (Test-Path $ConfigsPath)){
-        mkdir -p $ConfigsPath | Out-Null
+      if(-not (Test-Path (Get-CyaConfigPath))){
+        mkdir -p (Get-CyaConfigPath) | Out-Null
       }
     }
 
@@ -515,7 +535,7 @@ function New-CyaConfig {
 function Get-CyaConfig {
   [CmdletBinding()]
   param($Name, [Switch]$Status, [Switch]$Unprotected)
-  if(-not (Test-Path $ConfigsPath)){
+  if(-not (Test-Path (Get-CyaConfigPath))){
     return
   }
 
@@ -544,13 +564,13 @@ function Get-CyaConfig {
 
   # error if not found
   if($Name){
-    $ConfigPath = Join-Path -Path $ConfigsPath -ChildPath $Name
+    $ConfigPath = Join-Path -Path (Get-CyaConfigPath) -ChildPath $Name
     if(-not (Test-Path $ConfigPath -PathType Leaf)){
       Write-Error -Message "CyaConfig `"$Name`" not found" -ErrorAction Stop
     }
   }
 
-  ForEach($Config in Get-ChildItem $ConfigsPath){
+  ForEach($Config in Get-ChildItem (Get-CyaConfigPath)){
     $ConfigName = $Config.Name
     if($Name -and ($ConfigName -ne $Name)){
       Continue
@@ -640,7 +660,7 @@ function Unprotect-CyaConfig {
 
     # if file exists and protected, stop we have a conflict
     ForEach($Config in $Configs){
-      $ConfigPath = Join-Path -Path $ConfigsPath -ChildPath $Config.Name
+      $ConfigPath = Join-Path -Path (Get-CyaConfigPath) -ChildPath $Config.Name
       $Config = Get-Item $ConfigPath | Get-Content | ConvertFrom-Json -Depth 3
       if($Config.Type -eq "File"){
         ForEach($Cipherbundle in $Config.Files){
@@ -674,7 +694,7 @@ function Unprotect-CyaConfig {
 
     # change the environment!
     ForEach($Config in $Configs){
-      $ConfigPath = Join-Path -Path $ConfigsPath -ChildPath $Config.Name
+      $ConfigPath = Join-Path -Path (Get-CyaConfigPath) -ChildPath $Config.Name
       $Config = Get-Item $ConfigPath | Get-Content | ConvertFrom-Json -Depth 3
       if($Config.Type -eq "File"){
         ForEach($Cipherbundle in $Config.Files){
@@ -742,7 +762,7 @@ function Protect-CyaConfig {
     }
 
     ForEach($Config in $Configs){
-      $ConfigPath = Join-Path -Path $ConfigsPath -ChildPath $Config.Name
+      $ConfigPath = Join-Path -Path (Get-CyaConfigPath) -ChildPath $Config.Name
       $Config = Get-Item $ConfigPath | Get-Content | ConvertFrom-Json -Depth 3
 
       # if file exists and unprotected, remove
@@ -782,8 +802,8 @@ function Rename-CyaConfig {
     $NewName
   )
   $Config = Get-CyaConfig -Name $Name
-  $OldPath = Join-Path -Path $ConfigsPath -ChildPath $Name
-  $NewPath = Join-Path -Path $ConfigsPath -ChildPath $NewName
+  $OldPath = Join-Path -Path (Get-CyaConfigPath) -ChildPath $Name
+  $NewPath = Join-Path -Path (Get-CyaConfigPath) -ChildPath $NewName
   if(Test-Path $NewPath){
     Write-Error "CyaConfig name `"$NewName`" conflicts with existing CyaConfig" -ErrorAction Stop
   }
@@ -796,7 +816,7 @@ function Remove-CyaConfig {
     $Name
   )
   $Config = Get-CyaConfig -Name $Name
-  $Path = Join-Path -Path $ConfigsPath -ChildPath $Name
+  $Path = Join-Path -Path (Get-CyaConfigPath) -ChildPath $Name
   rm $Path
 }
 
@@ -808,15 +828,15 @@ function Rename-CyaPassword {
     [Parameter(Mandatory=$true)]
     $NewName
   )
-  $CyaPassword = Get-CyaPassword -Name $Name
-  $OldPath = Join-Path -Path $PasswordsPath -ChildPath $Name
-  $NewPath = Join-Path -Path $PasswordsPath -ChildPath $NewName
+  $CyaPassword = Get-CyaPassword -Name $Name -ErrorAction Stop
+  $OldPath = Join-Path -Path (Get-CyaPasswordPath) -ChildPath $Name
+  $NewPath = Join-Path -Path (Get-CyaPasswordPath) -ChildPath $NewName
   if(Test-Path $NewPath){
     Write-Error "CyaPassword name `"$NewName`" conflicts with existing CyaPassword" -ErrorAction Stop
   }
 
   # update all relevant CyaConfigs CyaPassword name
-  ForEach($File in (Get-ChildItem $ConfigsPath)){
+  ForEach($File in (Get-ChildItem (Get-CyaConfigPath))){
     $CyaConfig = $File | Get-Content | ConvertFrom-Json -Depth 3
     if($CyaConfig.CyaPassword -eq $Name){
       $CyaConfig.CyaPassword = $NewName
@@ -832,23 +852,25 @@ function Remove-CyaPassword {
     [Parameter(Mandatory=$true)]
     $Name
   )
-  $CyaPassword = Get-CyaPassword -Name $Name
+  $CyaPassword = Get-CyaPassword -Name $Name -ErrorAction Stop
   # Check if any configs still use the password
   $StillInUse = @()
-  ForEach($File in (Get-ChildItem $ConfigsPath)){
-    $CyaConfig = $File | Get-Content | ConvertFrom-Json -Depth 3
-    if($CyaConfig.CyaPassword -eq $Name){
-      $StillInUse += Get-CyaConfig -Name $File.Name
+  if(Test-Path (Get-CyaConfigPath)){
+    ForEach($File in (Get-ChildItem (Get-CyaConfigPath))){
+      $CyaConfig = $File | Get-Content | ConvertFrom-Json -Depth 3
+      if($CyaConfig.CyaPassword -eq $Name){
+        $StillInUse += Get-CyaConfig -Name $File.Name
+      }
+    }
+    if($StillInUse){
+      $StillInUse
+      $Message = "The CyaConfigs above are still using this password. " +
+        "To delete the CyaPassword you must first run Remove-CyaConfig"
+      Write-Error $Message -ErrorAction Stop
     }
   }
-  if($StillInUse){
-    $StillInUse
-    $Message = "The CyaConfigs above are still using this password. " +
-      "To delete the CyaPassword you must first run Remove-CyaConfig"
-    Write-Error $Message -ErrorAction Stop
-  }
 
-  $Path = Join-Path -Path $PasswordsPath -ChildPath $Name
+  $Path = Join-Path -Path (Get-CyaPasswordPath) -ChildPath $Name
   rm $Path
 }
 

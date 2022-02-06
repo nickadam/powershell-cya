@@ -1,5 +1,6 @@
 . .\Cya.ps1
 
+
 $Test = "Get-ProtectionStatus EnvVar Protected"
 $Expected = "Protected"
 $TempVar = [PSCustomObject]@{"Name" = "cyatestvar"; "Value" = "this is a string"}
@@ -138,9 +139,12 @@ if($Actual -ne $Expected){
 }
 
 
-$Test = "ConvertTo-Cipherbundle ConvertFrom-Cipherbundle String"
+$Test = "ConvertTo-Cipherbundle ConvertFrom-Cipherbundle EnvVar"
 $Expected = "this is a string"
-$Actual = [PSCustomObject]@{"Name" = "test"; "Value" = "this is a string"} | ConvertTo-Cipherbundle -Key "this is a key" | ConvertFrom-Cipherbundle -Key "this is a key"
+$Env:cyatestvar = ""
+$EnvVar = [PSCustomObject]@{"Name" = "cyatestvar"; "Value" = "this is a string"}
+$EnvVar | ConvertTo-Cipherbundle -Key "this is a key" | ConvertFrom-Cipherbundle -Key "this is a key" | Out-Null
+$Actual = $Env:cyatestvar
 if($Actual -ne $Expected){
   Write-Error "$Test failed."
   "Expected - $Expected"
