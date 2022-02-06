@@ -182,12 +182,12 @@ function Get-CyaPassword {
   if($Name){
     $PasswordPath = Join-Path -Path $PasswordsPath -ChildPath $Name
     if(Test-Path $PasswordPath -PathType Leaf){
-      Get-Item $PasswordPath
+      Get-Item $PasswordPath | Select Name
     }else{
       Write-Error -Message "CyaPassword `"$Name`" not found"
     }
   }else{
-    Get-ChildItem $PasswordsPath
+    Get-ChildItem $PasswordsPath | Select Name
   }
 }
 
