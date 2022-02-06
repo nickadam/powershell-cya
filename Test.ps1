@@ -68,6 +68,17 @@ if($Actual -ne $Expected){
 }
 
 
+$Test = "ConvertTo-Cipherbundle ConvertFrom-Cipherbundle empty string"
+$Expected = $null
+$Actual = "" | ConvertTo-Cipherbundle -Key "this is a key" | ConvertFrom-Cipherbundle -Key "this is a key"
+if($Actual -ne $Expected){
+  Write-Error "$Test failed."
+  "Expected - $Expected"
+  "Actual - $Actual"
+  " "
+}
+
+
 $Test = "ConvertTo-Cipherbundle ConvertFrom-Cipherbundle String"
 $Expected = "this is a string"
 $Actual = "this is a string" | ConvertTo-Cipherbundle -Key "this is a key" | ConvertFrom-Cipherbundle -Key "this is a key"

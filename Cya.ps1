@@ -67,17 +67,21 @@ function Get-SecureStringText {
 
 function Get-EncryptedAnsibleVaultString {
   param($String, $Key)
-  $Password = ConvertTo-SecureString -String $Key -AsPlainText
-  Get-EncryptedAnsibleVault -Value $String -Password $Password #  | Out-File -Encoding Default $TempFile
+  if($String){
+    $Password = ConvertTo-SecureString -String $Key -AsPlainText
+    Get-EncryptedAnsibleVault -Value $String -Password $Password #  | Out-File -Encoding Default $TempFile
+  }
 }
 
 function Get-DecryptedAnsibleVaultString {
   param($CipherTextString, $Key)
-  $Password = ConvertTo-SecureString -String $Key -AsPlainText
-  $TempFile = New-TemporaryFile
-  $CipherTextString | Out-File -Encoding Default $TempFile
-  Get-DecryptedAnsibleVault -Path $TempFile -Password $Password
-  Remove-Item $TempFile
+  if($CipherTextString){
+    $Password = ConvertTo-SecureString -String $Key -AsPlainText
+    $TempFile = New-TemporaryFile
+    $CipherTextString | Out-File -Encoding Default $TempFile
+    Get-DecryptedAnsibleVault -Path $TempFile -Password $Password
+    Remove-Item $TempFile
+  }
 }
 
 function ConvertFrom-Cipherbundle {
