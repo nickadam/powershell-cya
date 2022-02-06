@@ -472,12 +472,12 @@ function New-CyaConfig {
 
 function Get-CyaConfig {
   [CmdletBinding()]
-  param($Name)
+  param($Name, [Switch]$Status, [Switch]$Unprotected)
   if(-not (Test-Path $ConfigsPath)){
     return
   }
 
-  function Get-Config {
+  function Get-ConfigSummary {
     [CmdletBinding()]
     param([Parameter(ValueFromPipeline)]$Config)
     $Type = $Config.Type
@@ -513,14 +513,50 @@ function Get-CyaConfig {
     if($Name -and ($ConfigName -ne $Name)){
       Continue
     }
-    $Config = $Config | Get-Content | ConvertFrom-Json -Depth 3 | Get-Config
-    [PSCustomObject]@{
-      "Name" = $ConfigName
-      "Type" = $Config.Type
-      "CyaPassword" = $Config.CyaPassword
-      "ProtectOnExit" = $Config.ProtectOnExit
-      "Variables" = $Config.Variables
-      "Files" = $Config.Files
+    $Config = $Config | Get-Content | ConvertFrom-Json -Depth 3
+    $ConfigSummary = $Config | Get-ConfigSummary
+    if(-not ($Status -or $Unprotected)){
+      [PSCustomObject]@{
+        "Name" = $ConfigName
+        "Type" = $ConfigSummary.Type
+        "CyaPassword" = $ConfigSummary.CyaPassword
+        "ProtectOnExit" = $ConfigSummary.ProtectOnExit
+        "Variables" = $ConfigSummary.Variables
+        "Files" = $ConfigSummary.Files
+      }
+    }else{
+      if($Config.Variables){
+        $Config.Variables | ForEach {
+          $Cipherbundle = $_
+          $ProtectionStatus = $Cipherbundle | Get-ProtectionStatus
+          if(-not $Unprotected -or ($ProtectionStatus.Status -eq "Unprotected")){
+            [PSCustomObject]@{
+              "Name" = $ConfigName
+              "Type" = $ConfigSummary.Type
+              "CyaPassword" = $ConfigSummary.CyaPassword
+              "ProtectOnExit" = $ConfigSummary.ProtectOnExit
+              "Item" = $Cipherbundle.Name
+              "Status" = $ProtectionStatus.Status
+            }
+          }
+        }
+      }
+      if($Config.Files){
+        $Config.Files | ForEach {
+          $Cipherbundle = $_
+          $ProtectionStatus = $Cipherbundle | Get-ProtectionStatus
+          if(-not $Unprotected -or ($ProtectionStatus.Status -eq "Unprotected")){
+            [PSCustomObject]@{
+              "Name" = $ConfigName
+              "Type" = $ConfigSummary.Type
+              "CyaPassword" = $ConfigSummary.CyaPassword
+              "ProtectOnExit" = $ConfigSummary.ProtectOnExit
+              "Item" = $Cipherbundle.FilePath
+              "Status" = $ProtectionStatus.Status
+            }
+          }
+        }
+      }
     }
   }
 }
