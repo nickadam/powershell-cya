@@ -1,5 +1,36 @@
 . .\Cya.ps1
 
+$Test = "Confirm-CipherbundleFileHash Fails"
+$Expected = $False
+$TempFile = New-TemporaryFile
+"This is a test" | Out-File -Encoding Default $TempFile
+$Cipherbundle = $TempFile | ConvertTo-Cipherbundle -Key "this is a key"
+"This is a different file" | Out-File -Encoding Default $TempFile
+$Actual = Confirm-CipherbundleFileHash -Cipherbundle $Cipherbundle
+Remove-Item $TempFile
+if($Actual -ne $Expected){
+  Write-Error "$Test failed."
+  "Expected - $Expected"
+  "Actual - $Actual"
+  " "
+}
+
+
+$Test = "Confirm-CipherbundleFileHash"
+$Expected = $True
+$TempFile = New-TemporaryFile
+"This is a test" | Out-File -Encoding Default $TempFile
+$Cipherbundle = $TempFile | ConvertTo-Cipherbundle -Key "this is a key"
+$Actual = Confirm-CipherbundleFileHash -Cipherbundle $Cipherbundle
+Remove-Item $TempFile
+if($Actual -ne $Expected){
+  Write-Error "$Test failed."
+  "Expected - $Expected"
+  "Actual - $Actual"
+  " "
+}
+
+
 $Test = "ConvertTo-Cipherbundle ConvertFrom-Cipherbundle File"
 $Expected = "This is a test"
 $TempFile = New-TemporaryFile
