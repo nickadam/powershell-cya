@@ -7,7 +7,7 @@
 # Set-CyaConfig -OldPath -NewPath
 # Rename-CyaConfig
 # Remove-CyaConfig
-# Protect-CyaConfig
+# Protect-CyaConfig (on exit)
 
 function Get-Sha256Hash {
   param($File, $String, $Salt)
@@ -84,7 +84,8 @@ function ConvertFrom-Cipherbundle {
   param([Parameter(ValueFromPipeline)]$Cipherbundle, $Key)
   process {
     if($Cipherbundle.Type -eq "EnvVar"){
-      Get-DecryptedAnsibleVaultString -CipherTextString $Cipherbundle.Ciphertext -Key $Key
+      $Value = Get-DecryptedAnsibleVaultString -CipherTextString $Cipherbundle.Ciphertext -Key $Key
+      [System.Environment]::SetEnvironmentVariable($Cipherbundle.Name, $Value)
     }
     if($Cipherbundle.Type -eq "File"){
       $FilePath = $Cipherbundle.FilePath
@@ -657,6 +658,72 @@ function Unprotect-CyaConfig {
       # set environment variables
       if($Config.Type -eq "EnvVar"){
         $Config.Variables | ConvertFrom-Cipherbundle -Key $Keys[$Config.CyaPassword] | Out-Null
+      }
+    }
+
+    # Show protection status
+    ForEach($Config in $Configs){
+      Get-CyaConfig -Name $Config.Name -Status
+    }
+  }
+}
+
+function Protect-CyaConfig {
+  [CmdletBinding()]
+  param(
+    [Parameter(ValueFromPipeline)]
+    $CyaConfig,
+
+    $Name
+  )
+  begin {
+    $Configs = @()
+  }
+  process {
+    $Config = $False
+    if($Name){
+      $Config = Get-CyaConfig -Name $Name
+    }
+    if($CyaConfig){
+      $Config = $CyaConfig
+    }
+    if($Config){
+      $Configs += $Config
+    }
+  }
+  end{
+    # nothing provided, get all configs
+    if(-not $CyaConfig -and -not $Name){
+      $Configs = Get-CyaConfig
+    }
+
+    # nothing to do
+    if(-not $Configs){
+      return
+    }
+
+    ForEach($Config in $Configs){
+      $ConfigPath = Join-Path -Path $ConfigsPath -ChildPath $Config.Name
+      $Config = Get-Item $ConfigPath | Get-Content | ConvertFrom-Json -Depth 3
+
+      # if file exists and unprotected, remove
+      if($Config.Type -eq "File"){
+        ForEach($Cipherbundle in $Config.Files){
+          $FilePath = $Cipherbundle.FilePath
+          if(Test-Path $FilePath){
+            $ProtectionStatus = $Cipherbundle | Get-ProtectionStatus
+            if($ProtectionStatus.Status -eq "Unprotected"){
+              Remove-Item $FilePath
+            }
+          }
+        }
+      }
+
+      # unset variables
+      if($Config.Type -eq "EnvVar"){
+        ForEach($Variable in $Configs.Variables.Name){
+          [System.Environment]::SetEnvironmentVariable($Variable,"")
+        }
       }
     }
 
