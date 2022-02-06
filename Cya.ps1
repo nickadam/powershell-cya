@@ -71,7 +71,7 @@ function Get-EncryptedAnsibleVaultString {
   param($String, $Key)
   if($String){
     $Password = ConvertTo-SecureString -String $Key -AsPlainText
-    Get-EncryptedAnsibleVault -Value $String -Password $Password #  | Out-File -Encoding Default $TempFile
+    Get-EncryptedAnsibleVault -Value $String -Password $Password
   }
 }
 
@@ -617,6 +617,36 @@ function Get-CyaConfig {
               "Status" = $ProtectionStatus.Status
             }
           }
+
+          # Warn if Protected but a different file exists not in any config
+          if((Test-Path $Cipherbundle.FilePath) -and ($ProtectionStatus.Status -eq "Protected")){
+            $InAnotherConfig = $False
+            Get-CyaConfigPath |
+              Get-ChildItem |
+              ForEach {
+                Get-Content $_ |
+                ConvertFrom-Json -Depth 3 |
+                Where {$_.Type -eq "File"} |
+                ForEach {
+                  $PossibleMatchingConfig = $_
+                  $PossibleMatchingConfig.Files |
+                  Where {$_.FilePath -eq $Cipherbundle.FilePath} |
+                  ForEach {
+                    $PossibleMatchingCipherbundle = $_
+                    if(Confirm-CipherbundleFileHash -Cipherbundle $PossibleMatchingCipherbundle){
+                      $InAnotherConfig = $True
+                    }
+                  }
+                }
+              }
+            if(-not $InAnotherConfig){
+              $MessageFilePath = $Cipherbundle.FilePath
+              $Message = "CyaConfig `"$ConfigName`" file `"$MessageFilePath`" " +
+                "exists and differs from the protected file in the config. " +
+                "The file may have been overwritten or modified since it was unprotected.`n"
+              Write-Warning $Message
+            }
+          }
         }
       }
     }
@@ -669,8 +699,8 @@ function Unprotect-CyaConfig {
             $ProtectionStatus = $Cipherbundle | Get-ProtectionStatus
             if($ProtectionStatus.Status -eq "Protected"){
               $Message = "Conflicting file `"$FilePath`" exists. " +
-                "The file may have been modified since it was last protected. " +
-                "Delete or rename the file to resolve the conflict."
+                "The file may have been overwritten or modified since it was " +
+                "unprotected. Delete or rename the file to resolve the conflict."
               Write-Error $Message -ErrorAction Stop
             }
           }
