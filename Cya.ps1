@@ -1,10 +1,5 @@
 # Ciphertext Your Assets
 
-# Set-CyaPassword ??? reset lots of work
-#
-# Set-CyaConfig -OldPath -NewPath
-# Protect-CyaConfig (on exit)
-
 function Get-Sha256Hash {
   param($File, $String, $Salt)
 
@@ -808,3 +803,15 @@ function Remove-CyaPassword {
   $Path = Join-Path -Path $PasswordsPath -ChildPath $Name
   rm $Path
 }
+
+$OnRemoveScript = {
+  Get-CyaConfig -Unprotected | Where{($_.Type -eq "File") -and ($_.ProtectOnExit -eq $True)} | ForEach {
+    $CyaConfig = $_
+    if(Test-Path $CyaConfig.Item){
+      rm $CyaConfig.Item
+    }
+  }
+}
+
+$ExecutionContext.SessionState.Module.OnRemove += $OnRemoveScript
+Register-EngineEvent -SourceIdentifier ([System.Management.Automation.PsEngineEvent]::Exiting) -Action $OnRemoveScript
