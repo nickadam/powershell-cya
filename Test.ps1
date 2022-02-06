@@ -32,9 +32,9 @@ if($Actual -ne $Expected){
 $Test = "Get-ProtectionStatus File Protected"
 $Expected = "Protected"
 $TempFile = New-TemporaryFile
-"This is a test" | Out-File -Encoding Default $TempFile
+"This is a test" | Out-File -NoNewline -Encoding Default $TempFile
 $Cipherbundle = $TempFile | ConvertTo-Cipherbundle -Key "this is a key"
-"This is a different file" | Out-File -Encoding Default $TempFile
+"This is a different file" | Out-File -NoNewline -Encoding Default $TempFile
 $Actual = ($Cipherbundle | Get-ProtectionStatus).Status
 Remove-Item $TempFile
 if($Actual -ne $Expected){
@@ -48,7 +48,7 @@ if($Actual -ne $Expected){
 $Test = "Get-ProtectionStatus File Unprotected"
 $Expected = "Unprotected"
 $TempFile = New-TemporaryFile
-"This is a test" | Out-File -Encoding Default $TempFile
+"This is a test" | Out-File -NoNewline -Encoding Default $TempFile
 $Cipherbundle = $TempFile | ConvertTo-Cipherbundle -Key "this is a key"
 $Actual = ($Cipherbundle | Get-ProtectionStatus).Status
 Remove-Item $TempFile
@@ -63,9 +63,9 @@ if($Actual -ne $Expected){
 $Test = "Confirm-CipherbundleFileHash Fails"
 $Expected = $False
 $TempFile = New-TemporaryFile
-"This is a test" | Out-File -Encoding Default $TempFile
+"This is a test" | Out-File -NoNewline -Encoding Default $TempFile
 $Cipherbundle = $TempFile | ConvertTo-Cipherbundle -Key "this is a key"
-"This is a different file" | Out-File -Encoding Default $TempFile
+"This is a different file" | Out-File -NoNewline -Encoding Default $TempFile
 $Actual = Confirm-CipherbundleFileHash -Cipherbundle $Cipherbundle
 Remove-Item $TempFile
 if($Actual -ne $Expected){
@@ -79,7 +79,7 @@ if($Actual -ne $Expected){
 $Test = "Confirm-CipherbundleFileHash"
 $Expected = $True
 $TempFile = New-TemporaryFile
-"This is a test" | Out-File -Encoding Default $TempFile
+"This is a test" | Out-File -NoNewline -Encoding Default $TempFile
 $Cipherbundle = $TempFile | ConvertTo-Cipherbundle -Key "this is a key"
 $Actual = Confirm-CipherbundleFileHash -Cipherbundle $Cipherbundle
 Remove-Item $TempFile
@@ -95,8 +95,8 @@ $Test = "ConvertTo-Cipherbundle ConvertFrom-Cipherbundle Many Files"
 $Expected = "This is a test This is another test"
 $TempFile = New-TemporaryFile
 $TempFile2 = New-TemporaryFile
-"This is a test" | Out-File -Encoding Default $TempFile
-"This is another test" | Out-File -Encoding Default $TempFile2
+"This is a test" | Out-File -NoNewline -Encoding Default $TempFile
+"This is another test" | Out-File -NoNewline -Encoding Default $TempFile2
 $Cipherbundles = $TempFile, $TempFile2 | ConvertTo-Cipherbundle -Key "this is a key"
 Remove-Item $TempFile
 Remove-Item $TempFile2
@@ -114,7 +114,7 @@ if($Actual -ne $Expected){
 $Test = "ConvertTo-Cipherbundle ConvertFrom-Cipherbundle File"
 $Expected = "This is a test"
 $TempFile = New-TemporaryFile
-"This is a test" | Out-File -Encoding Default $TempFile
+"This is a test" | Out-File -NoNewline -Encoding Default $TempFile
 $Cipherbundle = $TempFile | ConvertTo-Cipherbundle -Key "this is a key"
 Remove-Item $TempFile
 $Cipherbundle | ConvertFrom-Cipherbundle -Key "this is a key" | Out-Null
@@ -198,9 +198,9 @@ if($Actual -ne $Expected){
 
 
 $Test = "Get-Base64FromFile -File"
-$Expected = "VGhpcyBpcyBhIHRlc3QNCg=="
+$Expected = "VGhpcyBpcyBhIHRlc3Q="
 $TempFile = New-TemporaryFile
-"This is a test" | Out-File -Encoding Default $TempFile
+"This is a test" | Out-File -NoNewline -Encoding Default $TempFile
 $Actual = Get-Base64FromFile -File $TempFile
 Remove-Item $TempFile
 if($Actual -ne $Expected){
@@ -212,9 +212,9 @@ if($Actual -ne $Expected){
 
 
 $Test = "Get-Sha256Hash -File"
-$Expected = "07849dc26fcbb2f3bd5f57bdf214bae374575f1bd4e6816482324799417cb379"
+$Expected = "c7be1ed902fb8dd4d48997c6452f5d7e509fbcdbe2808b16bcf4edce4c07d14e"
 $TempFile = New-TemporaryFile
-"This is a test" | Out-File -Encoding Default $TempFile
+"This is a test" | Out-File -NoNewline -Encoding Default $TempFile
 $Actual = Get-Sha256Hash -File $TempFile
 Remove-Item $TempFile
 if($Actual -ne $Expected){
@@ -226,9 +226,9 @@ if($Actual -ne $Expected){
 
 
 $Test = "Get-Sha256Hash -File -Salt"
-$Expected = "b51e131083f00ccde8806c220dd40d82e9414f071a5d7f84dba1722d8e1ebe88"
+$Expected = "9ed7896bcd84771a65d47ce53ee1a44fb1a47437217f52c9f012c4ed9ffe84ff"
 $TempFile = New-TemporaryFile
-"This is a test" | Out-File -Encoding Default $TempFile
+"This is a test" | Out-File -NoNewline -Encoding Default $TempFile
 $Actual = Get-Sha256Hash -File $TempFile -Salt "This is a salt"
 Remove-Item $TempFile
 if($Actual -ne $Expected){
