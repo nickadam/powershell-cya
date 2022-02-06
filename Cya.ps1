@@ -334,13 +334,9 @@ function New-CyaConfig {
     if(-not (Test-Path $ConfigsPath)){
       mkdir -p $ConfigsPath | Out-Null
     }
-
-    $CyaConfig | ConvertTo-Json -Depth 4 | Out-File -Encoding Default $ConfigPath
-    Get-CyaConfig -Name $Name
   }
 
   if($Type -eq "File"){
-
     if($ProtectOnExit -eq $Null){
       $Options = [System.Management.Automation.Host.ChoiceDescription[]] @("&Yes", "&No")
       $Message = "Would you like to automatically run Protect-CyaConfig (deletes unencrypted config files) on this config when unloading the Cya module or exiting powershell?"
@@ -390,23 +386,33 @@ function New-CyaConfig {
     $Key = Get-DecryptedAnsibleVault -Path (Get-CyaPassword -Name $CyaPassword) -Password $Password
 
     # # encrypt all the files
-    # $FileCollection | ConvertTo
-    # $File | ForEach {
-    #   $FileCollection +=
-    # }
+    $FileCollection = $File | Get-Item | ConvertTo-Cipherbundle -Key $Key
 
-    if($File.length -eq 1){
+    if($FileCollection.length -eq 1){
       $CyaConfig = [PSCustomObject]@{
         "Type" = "File"
+        "CyaPassword" = $CyaPassword
+        "ProtectOnExit" = $ProtectOnExit
         "Files" = @($FileCollection)
       }
     }else{
       $CyaConfig = [PSCustomObject]@{
         "Type" = "File"
+        "CyaPassword" = $CyaPassword
+        "ProtectOnExit" = $ProtectOnExit
         "Files" = $FileCollection
       }
     }
   }
+
+  # nothing to do
+  if(-not $CyaConfig){
+    return
+  }
+
+  # write config file
+  $CyaConfig | ConvertTo-Json -Depth 4 | Out-File -Encoding Default $ConfigPath
+  Get-CyaConfig -Name $Name
 }
 
 function Get-CyaConfig {
@@ -426,6 +432,9 @@ function Get-CyaConfig {
     if($Type -eq "EnvVar"){
       $ProtectOnExit = $True
       $Variables = $Config.Variables.Name
+    }
+    if($Type -eq "File"){
+      $Files = $Config.Files.FilePath
     }
     [PSCustomObject]@{
       "Type" = $Type
