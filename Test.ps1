@@ -31,6 +31,26 @@ if($Actual -ne $Expected){
 }
 
 
+$Test = "ConvertTo-Cipherbundle ConvertFrom-Cipherbundle Many Files"
+$Expected = "This is a test This is another test"
+$TempFile = New-TemporaryFile
+$TempFile2 = New-TemporaryFile
+"This is a test" | Out-File -Encoding Default $TempFile
+"This is another test" | Out-File -Encoding Default $TempFile2
+$Cipherbundles = $TempFile, $TempFile2 | ConvertTo-Cipherbundle -Key "this is a key"
+Remove-Item $TempFile
+Remove-Item $TempFile2
+$Cipherbundles | ConvertFrom-Cipherbundle -Key "this is a key" | Out-Null
+$Actual = (Get-Content $TempFile) + " " + (Get-Content $TempFile2)
+Remove-Item $TempFile
+if($Actual -ne $Expected){
+  Write-Error "$Test failed."
+  "Expected - $Expected"
+  "Actual - $Actual"
+  " "
+}
+
+
 $Test = "ConvertTo-Cipherbundle ConvertFrom-Cipherbundle File"
 $Expected = "This is a test"
 $TempFile = New-TemporaryFile

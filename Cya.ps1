@@ -83,18 +83,20 @@ function Get-DecryptedAnsibleVaultString {
 function ConvertFrom-Cipherbundle {
   [CmdletBinding()]
   param([Parameter(ValueFromPipeline)]$Cipherbundle, $Key)
-  if($Cipherbundle.Type -eq "String"){
-    Get-DecryptedAnsibleVaultString -CipherTextString $Cipherbundle.Ciphertext -Key $Key
-  }
-  if($Cipherbundle.Type -eq "File"){
-    $FilePath = $Cipherbundle.FilePath
-    if(Test-Path $FilePath -PathType Leaf){
-      Write-Error "File $FilePath already exists" -ErrorAction Stop
-    }else{
-      $Base64 = Get-DecryptedAnsibleVaultString -CipherTextString $Cipherbundle.Ciphertext -Key $Key
-      $FileBytes = [System.Convert]::FromBase64String($Base64)
-      [System.IO.File]::WriteAllBytes($FilePath, $FileBytes)
-      Get-Item $FilePath
+  process {
+    if($Cipherbundle.Type -eq "String"){
+      Get-DecryptedAnsibleVaultString -CipherTextString $Cipherbundle.Ciphertext -Key $Key
+    }
+    if($Cipherbundle.Type -eq "File"){
+      $FilePath = $Cipherbundle.FilePath
+      if(Test-Path $FilePath -PathType Leaf){
+        Write-Error "File $FilePath already exists" -ErrorAction Stop
+      }else{
+        $Base64 = Get-DecryptedAnsibleVaultString -CipherTextString $Cipherbundle.Ciphertext -Key $Key
+        $FileBytes = [System.Convert]::FromBase64String($Base64)
+        [System.IO.File]::WriteAllBytes($FilePath, $FileBytes)
+        Get-Item $FilePath
+      }
     }
   }
 }
@@ -102,23 +104,25 @@ function ConvertFrom-Cipherbundle {
 function ConvertTo-Cipherbundle {
   [CmdletBinding()]
   param([Parameter(ValueFromPipeline)]$Item, $Key)
-  if($Item.GetType().Name -eq "FileInfo"){
-    $Salt = Get-RandomString
-    $Hash = Get-Sha256Hash -File $Item -Salt $Salt
-    $Base64 = Get-Base64FromFile -File $Item
-    $Ciphertext = Get-EncryptedAnsibleVaultString -String $Base64 -Key $Key
-    [PSCustomObject]@{
-      "Type" = "File"
-      "FilePath" = $Item.FullName
-      "Salt" = $Salt
-      "Hash" = $Hash
-      "Ciphertext" = $Ciphertext
+  process {
+    if($Item.GetType().Name -eq "FileInfo"){
+      $Salt = Get-RandomString
+      $Hash = Get-Sha256Hash -File $Item -Salt $Salt
+      $Base64 = Get-Base64FromFile -File $Item
+      $Ciphertext = Get-EncryptedAnsibleVaultString -String $Base64 -Key $Key
+      [PSCustomObject]@{
+        "Type" = "File"
+        "FilePath" = $Item.FullName
+        "Salt" = $Salt
+        "Hash" = $Hash
+        "Ciphertext" = $Ciphertext
+      }
     }
-  }
-  if($Item.GetType().Name -eq "String"){
-    [PSCustomObject]@{
-      "Type" = "String"
-      "Ciphertext" = Get-EncryptedAnsibleVaultString -String $Item -Key $Key
+    if($Item.GetType().Name -eq "String"){
+      [PSCustomObject]@{
+        "Type" = "String"
+        "Ciphertext" = Get-EncryptedAnsibleVaultString -String $Item -Key $Key
+      }
     }
   }
 }
@@ -366,18 +370,32 @@ function New-CyaConfig {
         }
       }
     }
-    $FileCollection = @()
-    $File | ForEach {
-      $FileItem = Get-Item $File
-      $FileCollection += $FileItem.FullName
-    }
 
     # nothing to do
-    if(-not $FileCollection){
+    if(-not $File){
       return
     }
 
-    if($FileCollection.length -eq 1){
+    # Check all files exist
+    $File | ForEach {
+      $FilePath = $_
+      if(-not (Test-Path $FilePath -PathType Leaf)){
+        Write-Error -Message "File $FilePath not found" -ErrorAction Stop
+      }
+    }
+
+    # get the key
+    Write-Host -NoNewline "Enter password for CyaPassword `"$CyaPassword`": "
+    $Password = Read-Host -AsSecureString
+    $Key = Get-DecryptedAnsibleVault -Path (Get-CyaPassword -Name $CyaPassword) -Password $Password
+
+    # # encrypt all the files
+    # $FileCollection | ConvertTo
+    # $File | ForEach {
+    #   $FileCollection +=
+    # }
+
+    if($File.length -eq 1){
       $CyaConfig = [PSCustomObject]@{
         "Type" = "File"
         "Files" = @($FileCollection)
