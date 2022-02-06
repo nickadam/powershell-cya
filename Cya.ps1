@@ -1,7 +1,6 @@
 # Ciphertext Your Assets
 
 # Set-CyaPassword ??? reset lots of work
-# Remove-CyaPassword
 #
 # Set-CyaConfig -OldPath -NewPath
 # Protect-CyaConfig (on exit)
@@ -783,4 +782,29 @@ function Rename-CyaPassword {
   }
 
   mv $OldPath $NewPath
+}
+
+function Remove-CyaPassword {
+  param(
+    [Parameter(Mandatory=$true)]
+    $Name
+  )
+  $CyaPassword = Get-CyaPassword -Name $Name
+  # Check if any configs still use the password
+  $StillInUse = @()
+  ForEach($File in (Get-ChildItem $ConfigsPath)){
+    $CyaConfig = $File | Get-Content | ConvertFrom-Json -Depth 3
+    if($CyaConfig.CyaPassword -eq $Name){
+      $StillInUse += Get-CyaConfig -Name $File.Name
+    }
+  }
+  if($StillInUse){
+    $StillInUse
+    $Message = "The CyaConfigs above are still using this password. " +
+      "To delete the CyaPassword you must first run Remove-CyaConfig"
+    Write-Error $Message -ErrorAction Stop
+  }
+
+  $Path = Join-Path -Path $PasswordsPath -ChildPath $Name
+  rm $Path
 }
