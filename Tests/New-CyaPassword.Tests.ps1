@@ -27,7 +27,7 @@ Describe "New-CyaPassword" {
       $result = $EncryptedBin.Ciphertext
     }
     It "Should write the password to the CyaPasswordPath Default file" {
-      $result.length | Should -Be 24
+      $result.length | Should -Be 108
     }
   }
 
@@ -39,7 +39,7 @@ Describe "New-CyaPassword" {
       $result = $EncryptedBin.Ciphertext
     }
     It "Should write the password to the CyaPasswordPath Name file" {
-      $result.length | Should -Be 24
+      $result.length | Should -Be 108
     }
   }
 }
