@@ -6,3 +6,11 @@ Get-ChildItem -Path (Join-Path $PSScriptRoot "Private" "*.ps1") | ForEach {
     Write-Error -Message "Failed to import $_"
   }
 }
+
+$ExportModule = @{
+    Alias = @()
+    Function = @()
+    Variable = @()
+}
+
+Export-ModuleMember @ExportModule

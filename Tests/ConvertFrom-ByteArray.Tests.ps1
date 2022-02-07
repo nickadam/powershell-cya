@@ -1,6 +1,5 @@
 BeforeAll {
-  Remove-Module Cya
-  Import-Module (Join-Path (Get-Item $PSScriptRoot).Parent "Cya.psm1")
+  . (Join-Path (Get-Item $PSScriptRoot).Parent "Private" "ConvertFrom-ByteArray.ps1")
 }
 
 Describe "ConvertFrom-ByteArray" {
