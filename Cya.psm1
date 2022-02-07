@@ -3,6 +3,6 @@ Get-ChildItem -Path (Join-Path $PSScriptRoot "Private" "*.ps1") | ForEach {
     . $_.FullName
   } catch {
     $FullName = $_.FullName
-    Write-Error -Message "Failed to import $FullName"
+    Write-Error -Message "Failed to import $_"
   }
 }

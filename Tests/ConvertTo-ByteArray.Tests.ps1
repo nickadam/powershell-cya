@@ -1,4 +1,5 @@
 BeforeAll {
+  Remove-Module Cya
   Import-Module (Join-Path (Get-Item $PSScriptRoot).Parent "Cya.psm1")
 }
 
