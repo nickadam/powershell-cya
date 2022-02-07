@@ -1,9 +1,12 @@
 BeforeAll {
   $ScriptName = Split-Path $PSCommandPath -Leaf
   $PrivateDirectory = Join-Path (Split-Path $PSCommandPath | Split-Path) "Private"
+  $PublicDirectory = Join-Path (Split-Path $PSCommandPath | Split-Path) "Public"
 
   # import all private scripts
-  Get-ChildItem -Path (Join-Path $PrivateDirectory "*.ps1") | ForEach {
+  $Items = Get-ChildItem -Path (Join-Path $PrivateDirectory "*.ps1")
+  $Items += Get-ChildItem -Path (Join-Path $PublicDirectory "*.ps1")
+  $Items | ForEach {
     try {
       . $_.FullName
     } catch {
