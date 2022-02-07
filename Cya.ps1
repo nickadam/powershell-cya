@@ -1,13 +1,5 @@
 # Ciphertext Your Assets
 
-function Get-CyaConfigPath {
-  $Base = Join-Path -Path $Home -ChildPath ".cya"
-  if($Env:CYAPATH){
-    $Base = $Env:CYAPATH
-  }
-  return Join-Path -Path $Base -ChildPath "configs"
-}
-
 function Get-Sha256Hash {
   param($File, $String, $Salt)
 
@@ -42,7 +34,6 @@ function Get-Base64FromFile {
   $FileBytes = [System.IO.File]::ReadAllBytes($File)
   [System.Convert]::ToBase64String($FileBytes)
 }
-
 
 function Get-SecureStringText {
   [CmdletBinding()]
