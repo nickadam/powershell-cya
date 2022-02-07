@@ -1,5 +1,7 @@
 BeforeAll {
-  . (Join-Path (Get-Item $PSScriptRoot).Parent "Private" "ConvertFrom-ByteArray.ps1")
+  $ScriptName = Split-Path $PSCommandPath -Leaf
+  $PrivateDirectory = Join-Path (Split-Path $PSCommandPath | Split-Path) "Private"
+  . (Join-Path $PrivateDirectory $ScriptName.Replace('.Tests.ps1','.ps1'))
 }
 
 Describe "ConvertFrom-ByteArray" {

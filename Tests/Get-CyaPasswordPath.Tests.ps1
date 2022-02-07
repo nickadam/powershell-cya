@@ -1,5 +1,7 @@
 BeforeAll {
-  . (Join-Path (Get-Item $PSScriptRoot).Parent "Private" "Get-CyaPasswordPath.ps1")
+  $ScriptName = Split-Path $PSCommandPath -Leaf
+  $PrivateDirectory = Join-Path (Split-Path $PSCommandPath | Split-Path) "Private"
+  . (Join-Path $PrivateDirectory $ScriptName.Replace('.Tests.ps1','.ps1'))
 }
 
 Describe "Get-CyaPasswordPath" {
@@ -9,7 +11,7 @@ Describe "Get-CyaPasswordPath" {
       $result = Get-CyaPasswordPath
     }
     It "Should return a string using `$Home" {
-      $expected = Join-Path $Home ".cya" "passwords"
+      $expected = Join-Path (Join-Path $Home ".cya") "passwords"
       $result | Should -Be $expected
     }
   }
