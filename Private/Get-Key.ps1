@@ -1,4 +1,5 @@
 function Get-Key {
+  [CmdletBinding()]
   param(
     [Parameter(Position=0, ValueFromPipeline)]
     [String]$CyaPassword = "Default",

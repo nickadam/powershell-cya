@@ -274,6 +274,6 @@ function New-CyaConfig {
 
     # write config file
     $CyaConfig | ConvertTo-Json | Out-File -Encoding Default $ConfigPath
-    Get-CyaConfig -Name $Name
+    Get-CyaConfig -Name $Name -Status
   }
 }
