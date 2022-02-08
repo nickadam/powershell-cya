@@ -43,7 +43,7 @@ function Get-CyaConfig {
     if($Name -and ($ConfigName -ne $Name)){
       Continue
     }
-    $Config = $Config | Get-Content | ConvertFrom-Json -Depth 3
+    $Config = $Config | Get-Content | ConvertFrom-Json
     $ConfigSummary = $Config | Get-ConfigSummary
     if(-not ($Status -or $Unprotected)){
       [PSCustomObject]@{
@@ -93,7 +93,7 @@ function Get-CyaConfig {
               Get-ChildItem |
               ForEach {
                 Get-Content $_ |
-                ConvertFrom-Json -Depth 3 |
+                ConvertFrom-Json |
                 Where {$_.Type -eq "File"} |
                 ForEach {
                   $PossibleMatchingConfig = $_

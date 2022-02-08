@@ -9,7 +9,7 @@ function Remove-CyaPassword {
   $CyaConfigPath = Get-CyaConfigPath
   if(Test-Path $CyaConfigPath){
     ForEach($File in (Get-ChildItem $CyaConfigPath)){
-      $CyaConfig = $File | Get-Content | ConvertFrom-Json -Depth 3
+      $CyaConfig = $File | Get-Content | ConvertFrom-Json
       if($CyaConfig.CyaPassword -eq $Name){
         $StillInUse += Get-CyaConfig -Name $File.Name
       }
