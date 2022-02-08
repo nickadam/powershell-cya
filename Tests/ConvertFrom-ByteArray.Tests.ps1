@@ -20,10 +20,10 @@ Describe "ConvertFrom-ByteArray" {
       $Bytes = @(97, 98, 99)
       # $TmpFile = "TestDrive:\test.txt" serious problems here with Split-Path -IsAbsolute
       $TmpFile = New-TemporaryFile
-      rm $TmpFile
+      Remove-Item $TmpFile
       $File = ConvertFrom-ByteArray -ByteArray $Bytes -Destination $TmpFile
       $Content = Get-Content $TmpFile
-      rm $TmpFile
+      Remove-Item $TmpFile
     }
     It "Should put the content in a file" {
       $Content | Should -Be "abc"
@@ -48,10 +48,10 @@ Describe "ConvertFrom-ByteArray" {
       $Bytes = @(97, 98, 99)
       # $TmpFile = "TestDrive:\test.txt" serious problems here with Split-Path -IsAbsolute
       $TmpFile = New-TemporaryFile
-      rm $TmpFile
+      Remove-Item $TmpFile
       $File = $Bytes | ConvertFrom-ByteArray -Destination $TmpFile
       $Content = Get-Content $TmpFile
-      rm $TmpFile
+      Remove-Item $TmpFile
     }
     It "Should put the content in a file" {
       $Content | Should -Be "abc"

@@ -24,5 +24,5 @@ function Rename-CyaPassword {
     }
   }
 
-  mv $OldPath $NewPath
+  Move-Item $OldPath $NewPath
 }

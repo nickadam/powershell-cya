@@ -17,7 +17,7 @@ BeforeAll {
 
   $OriginalCyaPath = $Env:CYAPATH
   $TmpFile = New-TemporaryFile
-  rm $TmpFile
+  Remove-Item $TmpFile
   mkdir $TmpFile
   $Env:CYAPATH = $TmpFile
 }

@@ -58,7 +58,7 @@ function Unprotect-CyaConfig {
     }
 
     # Get all keys
-    $CyaPasswords = ($Configs.CyaPassword | Group).Name
+    $CyaPasswords = ($Configs.CyaPassword | Group-Object).Name
     $Keys = @{}
     ForEach($CyaPassword in $CyaPasswords){
       if(-not $Password){

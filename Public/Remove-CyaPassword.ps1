@@ -24,5 +24,5 @@ function Remove-CyaPassword {
 
   $CyaPasswordPath = Get-CyaPasswordPath
   $FilePath = Join-Path -Path $CyaPasswordPath -ChildPath $Name
-  rm $FilePath
+  Remove-Item $FilePath
 }

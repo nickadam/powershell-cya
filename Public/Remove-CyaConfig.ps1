@@ -13,10 +13,10 @@ function Remove-CyaConfig {
   if($CyaConfig.Files){
     ForEach($File in $CyaConfig.Files){
       if($File.CiphertextFile){
-        rm $File.CiphertextFile
+        Remove-Item $File.CiphertextFile
       }
     }
   }
 
-  rm $ConfigPath
+  Remove-Item $ConfigPath
 }

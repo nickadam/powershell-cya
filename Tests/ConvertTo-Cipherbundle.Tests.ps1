@@ -15,7 +15,7 @@ BeforeAll {
 
   $OriginalCyaPath = $Env:CYAPATH
   $TmpFile = New-TemporaryFile
-  rm $TmpFile
+  Remove-Item $TmpFile
   mkdir $TmpFile
   $Env:CYAPATH = $TmpFile
 }
@@ -46,7 +46,7 @@ Describe "ConvertTo-Cipherbundle" {
       (Split-Path $result.CiphertextFile -Leaf) | Should -Be "test.0"
     }
     AfterAll {
-      rm $result.CiphertextFile
+      Remove-Item $result.CiphertextFile
     }
   }
 
@@ -73,12 +73,12 @@ Describe "ConvertTo-Cipherbundle" {
       (Split-Path $result.CiphertextFile -Leaf) | Should -Be "test.0"
     }
     AfterAll {
-      rm $result.CiphertextFile
+      Remove-Item $result.CiphertextFile
     }
   }
 
   AfterAll {
-    rm $Env:CYAPATH -Force -Recurse
+    Remove-Item $Env:CYAPATH -Force -Recurse
     $Env:CYAPATH = $OriginalCyaPath
   }
 }

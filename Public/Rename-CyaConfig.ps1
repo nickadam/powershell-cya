@@ -13,5 +13,5 @@ function Rename-CyaConfig {
   if(Test-Path $NewPath){
     Write-Error "CyaConfig name `"$NewName`" conflicts with existing CyaConfig" -ErrorAction Stop
   }
-  mv $OldPath $NewPath
+  Move-Item $OldPath $NewPath
 }

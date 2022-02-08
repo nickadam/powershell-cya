@@ -15,7 +15,7 @@ BeforeAll {
 
   $OriginalCyaPath = $Env:CYAPATH
   $TmpFile = New-TemporaryFile
-  rm $TmpFile
+  Remove-Item $TmpFile
   mkdir $TmpFile
   $Env:CYAPATH = $TmpFile
 }
@@ -64,7 +64,7 @@ Describe "ConvertFrom-Cipherbundle" {
       "test content" | Out-File -Encoding Default -NoNewline $TmpFile
 
       $Cipherbundle = $TmpFile | ConvertTo-Cipherbundle -Key "key" -Name "test"
-      rm $TmpFile
+      Remove-Item $TmpFile
       $Cipherbundle | ConvertFrom-Cipherbundle -Key "key" | Out-Null
       $result = Get-Content $TmpFile
     }
@@ -72,7 +72,7 @@ Describe "ConvertFrom-Cipherbundle" {
       $result | Should -Be "test content"
     }
     AfterAll {
-      rm $TmpFile
+      Remove-Item $TmpFile
     }
   }
 
@@ -83,7 +83,7 @@ Describe "ConvertFrom-Cipherbundle" {
       $RandomString | Out-File -Encoding Default -NoNewline $TmpFile
 
       $Cipherbundle = $TmpFile | ConvertTo-Cipherbundle -Key "key" -Name "test"
-      rm $TmpFile
+      Remove-Item $TmpFile
       $Cipherbundle | ConvertFrom-Cipherbundle -Key "key" | Out-Null
       $result = Get-Content $TmpFile
     }
@@ -91,12 +91,12 @@ Describe "ConvertFrom-Cipherbundle" {
       $result | Should -Be $RandomString
     }
     AfterAll {
-      rm $TmpFile
+      Remove-Item $TmpFile
     }
   }
 
   AfterAll {
-    rm $Env:CYAPATH -Force -Recurse
+    Remove-Item $Env:CYAPATH -Force -Recurse
     $Env:CYAPATH = $OriginalCyaPath
   }
 }
