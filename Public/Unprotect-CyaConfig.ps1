@@ -78,7 +78,7 @@ function Unprotect-CyaConfig {
           $FilePath = $Cipherbundle.FilePath
 
           # already there
-          if(Test-Path $FilePath){ # TODO warn if different
+          if(Test-Path $FilePath){
             Continue
           }
 
