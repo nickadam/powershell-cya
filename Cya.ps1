@@ -19,57 +19,6 @@ function Get-DecryptedAnsibleVaultString {
   }
 }
 
-function Confirm-CipherbundleFileHash {
-  [CmdletBinding()]
-  param([Parameter(ValueFromPipeline)]$Cipherbundle)
-  $Salt = $Cipherbundle.Salt
-  $Hash = Get-Sha256Hash -File $Cipherbundle.FilePath -Salt $Salt
-  $Hash -eq $Cipherbundle.Hash
-}
-
-function Confirm-CipherbundleEnvVarHash {
-  [CmdletBinding()]
-  param([Parameter(ValueFromPipeline)]$Cipherbundle)
-  $Name = $Cipherbundle.Name
-  $Salt = $Cipherbundle.Salt
-  $String = Get-EnvVarValueByName -Name $Name
-  if(-not $String){
-    return $False
-  }
-  $Hash = Get-Sha256Hash -String $String -Salt $Salt
-  $Hash -eq $Cipherbundle.Hash
-}
-
-function Get-ProtectionStatus {
-  [CmdletBinding()]
-  param([Parameter(ValueFromPipeline)]$Cipherbundle)
-  process{
-    $Status = "Protected"
-    if($Cipherbundle.Type -eq "File"){
-      if(Get-Item $Cipherbundle.FilePath -ErrorAction SilentlyContinue){
-        if($Cipherbundle | Confirm-CipherbundleFileHash){
-          $Status = "Unprotected"
-        }
-      }
-      [PSCustomObject]@{
-        "Type" = $Cipherbundle.Type
-        "FilePath" = $Cipherbundle.FilePath
-        "Status" = $Status
-      }
-    }
-    if($Cipherbundle.Type -eq "EnvVar"){
-      if($Cipherbundle | Confirm-CipherbundleEnvVarHash){
-        $Status = "Unprotected"
-      }
-      [PSCustomObject]@{
-        "Type" = $Cipherbundle.Type
-        "Name" = $Cipherbundle.FilePath
-        "Status" = $Status
-      }
-    }
-  }
-}
-
 function Unprotect-CyaConfig {
   [CmdletBinding()]
   param(
