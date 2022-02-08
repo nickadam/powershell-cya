@@ -4,7 +4,6 @@ function Get-CyaConfig {
 
   $CyaConfigPath = Get-CyaConfigPath
   if(-not (Test-Path $CyaConfigPath)){
-    Write-Warning -Message "No CyaConfigs"
     return
   }
 
