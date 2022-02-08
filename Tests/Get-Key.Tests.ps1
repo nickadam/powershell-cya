@@ -15,6 +15,7 @@ BeforeAll {
     }
   }
 
+  $OriginalCyaPath = $Env:CYAPATH
   $TmpFile = New-TemporaryFile
   rm $TmpFile
   mkdir $TmpFile
@@ -43,5 +44,9 @@ Describe "Get-Key" {
     It "Should write a random string different from others" {
       $Key1 -ne $Key2 | Should -Be $True
     }
+  }
+
+  AfterAll {
+    $Env:CYAPATH = $OriginalCyaPath
   }
 }

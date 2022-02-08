@@ -15,6 +15,7 @@ BeforeAll {
     }
   }
 
+  $OriginalCyaPath = $Env:CYAPATH
   $TmpFile = New-TemporaryFile
   rm $TmpFile
   mkdir $TmpFile
@@ -44,5 +45,9 @@ Describe "New-CyaPassword" {
     It "Should write the password to the CyaPasswordPath Name file" {
       $result.length | Should -Be 108
     }
+  }
+
+  AfterAll {
+    $Env:CYAPATH = $OriginalCyaPath
   }
 }

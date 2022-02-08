@@ -13,6 +13,7 @@ BeforeAll {
     }
   }
 
+  $OriginalCyaPath = $Env:CYAPATH
   $TmpFile = New-TemporaryFile
   rm $TmpFile
   mkdir $TmpFile
@@ -78,6 +79,6 @@ Describe "ConvertTo-Cipherbundle" {
 
   AfterAll {
     rm $Env:CYAPATH -Force -Recurse
-    $Env:CYAPATH=""
+    $Env:CYAPATH = $OriginalCyaPath
   }
 }

@@ -2,6 +2,8 @@ BeforeAll {
   $ScriptName = Split-Path $PSCommandPath -Leaf
   $PrivateDirectory = Join-Path (Split-Path $PSCommandPath | Split-Path) "Private"
   . (Join-Path $PrivateDirectory $ScriptName.Replace('.Tests.ps1','.ps1'))
+
+  $OriginalCyaPath = $Env:CYAPATH
 }
 
 Describe "Get-CyaPasswordPath" {
@@ -25,5 +27,9 @@ Describe "Get-CyaPasswordPath" {
       $expected = Join-Path "TestDrive:\" "passwords"
       $result | Should -Be $expected
     }
+  }
+
+  AfterAll {
+    $Env:CYAPATH = $OriginalCyaPath
   }
 }
