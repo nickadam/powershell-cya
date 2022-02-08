@@ -1,6 +1,10 @@
 function ConvertTo-Cipherbundle {
   [CmdletBinding()]
-  param([Parameter(ValueFromPipeline)]$Item, $Key, $Name)
+  param(
+    [Parameter(Position=0, Mandatory=$true, ValueFromPipeline)][Object]$Item,
+    [Parameter(Position=1, Mandatory=$true)][String]$Key,
+    [Parameter(Position=2, Mandatory=$true)][String]$Name
+  )
   process {
     $Salt = Get-RandomString
     $Password = ConvertTo-SecureString -String $Key -AsPlainText -Force
