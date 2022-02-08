@@ -93,9 +93,9 @@ Describe "ConvertFrom-Cipherbundle" {
       rm $TmpFile
     }
   }
-}
 
-AfterAll {
-  rm -rf $Env:CYAPATH
-  $Env:CYAPATH=""
+  AfterAll {
+    rm $Env:CYAPATH -Force -Recurse
+    $Env:CYAPATH=""
+  }
 }

@@ -75,9 +75,9 @@ Describe "ConvertTo-Cipherbundle" {
       rm $result.CiphertextFile
     }
   }
-}
 
-AfterAll {
-  rm -rf $Env:CYAPATH
-  $Env:CYAPATH=""
+  AfterAll {
+    rm $Env:CYAPATH -Force -Recurse
+    $Env:CYAPATH=""
+  }
 }
