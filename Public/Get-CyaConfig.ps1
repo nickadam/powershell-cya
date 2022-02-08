@@ -94,11 +94,11 @@ function Get-CyaConfig {
               ForEach-Object {
                 Get-Content $_ |
                 ConvertFrom-Json |
-                Where {$_.Type -eq "File"} |
+                Where-Object {$_.Type -eq "File"} |
                 ForEach-Object {
                   $PossibleMatchingConfig = $_
                   $PossibleMatchingConfig.Files |
-                  Where {$_.FilePath -eq $Cipherbundle.FilePath} |
+                  Where-Object {$_.FilePath -eq $Cipherbundle.FilePath} |
                   ForEach-Object {
                     $PossibleMatchingCipherbundle = $_
                     if(Confirm-CipherbundleFileHash -Cipherbundle $PossibleMatchingCipherbundle){
