@@ -2,7 +2,7 @@
 $Private = Get-ChildItem -Path (Join-Path $PSScriptRoot "Private" "*.ps1")
 $Public = Get-ChildItem -Path (Join-Path $PSScriptRoot "Public" "*.ps1")
 
-($Private + $Public) | ForEach {
+($Private + $Public) | ForEach-Object {
   try {
     . $_.FullName
   } catch {
@@ -24,7 +24,7 @@ $OnRemoveScript = {
 if(-not $Env:CYA_DISABLE_UNPROTECTED_MESSAGE){
   $Unprotected = Get-CyaConfig -Unprotected
   if($Unprotected){
-    $Unprotected | Format-Table | Out-String | ForEach {Write-Host $_}
+    $Unprotected | Format-Table | Out-String | ForEach-Object {Write-Host $_}
     Write-Warning "The items above are Unprotected"
   }
 }

@@ -154,7 +154,7 @@ function New-CyaConfig {
       # convert hashtable to list of objects
       $EnvVarCollectionList = @()
       if($EnvVarCollection.GetType().Name -eq "Hashtable"){
-        $EnvVarCollection.Keys | ForEach {
+        $EnvVarCollection.Keys | ForEach-Object {
           $EnvVarName = $_
           $EnvVarValue = $EnvVarCollection.$EnvVarName
           $EnvVarCollectionList += [PSCustomObject]@{
@@ -224,7 +224,7 @@ function New-CyaConfig {
       }
 
       # Check all files exist
-      $File | ForEach {
+      $File | ForEach-Object {
         $FilePath = $_
         if(-not (Test-Path $FilePath -PathType Leaf)){
           Write-Error -Message "File $FilePath not found" -ErrorAction Stop

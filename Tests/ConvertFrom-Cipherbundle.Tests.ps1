@@ -4,7 +4,7 @@ BeforeAll {
 
   # import all private scripts
   $Items = Get-ChildItem -Path (Join-Path $PrivateDirectory "*.ps1")
-  $Items | ForEach {
+  $Items | ForEach-Object {
     try {
       . $_.FullName
     } catch {

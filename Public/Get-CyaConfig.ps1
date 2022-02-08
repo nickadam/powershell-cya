@@ -56,7 +56,7 @@ function Get-CyaConfig {
       }
     }else{
       if($Config.Variables){
-        $Config.Variables | ForEach {
+        $Config.Variables | ForEach-Object {
           $Cipherbundle = $_
           $ProtectionStatus = $Cipherbundle | Get-ProtectionStatus
           if(-not $Unprotected -or ($ProtectionStatus.Status -eq "Unprotected")){
@@ -72,7 +72,7 @@ function Get-CyaConfig {
         }
       }
       if($Config.Files){
-        $Config.Files | ForEach {
+        $Config.Files | ForEach-Object {
           $Cipherbundle = $_
           $ProtectionStatus = $Cipherbundle | Get-ProtectionStatus
           if(-not $Unprotected -or ($ProtectionStatus.Status -eq "Unprotected")){
@@ -91,15 +91,15 @@ function Get-CyaConfig {
             $InAnotherConfig = $False
             Get-CyaConfigPath |
               Get-ChildItem |
-              ForEach {
+              ForEach-Object {
                 Get-Content $_ |
                 ConvertFrom-Json |
                 Where {$_.Type -eq "File"} |
-                ForEach {
+                ForEach-Object {
                   $PossibleMatchingConfig = $_
                   $PossibleMatchingConfig.Files |
                   Where {$_.FilePath -eq $Cipherbundle.FilePath} |
-                  ForEach {
+                  ForEach-Object {
                     $PossibleMatchingCipherbundle = $_
                     if(Confirm-CipherbundleFileHash -Cipherbundle $PossibleMatchingCipherbundle){
                       $InAnotherConfig = $True
