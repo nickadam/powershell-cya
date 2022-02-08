@@ -15,8 +15,8 @@ function New-CyaConfig {
     [Parameter(ValueFromPipeline)]
     [Object]$File,
 
-    [ValidateSet($True, $False, 1, 0)]
-    $ProtectOnExit,
+    [ValidateSet(0, 1)]
+    [Int]$ProtectOnExit = -1,
 
     [String]$CyaPassword="Default",
     [SecureString]$Password
@@ -72,14 +72,6 @@ function New-CyaConfig {
     }
     if($File){
       $Type = "File"
-    }
-
-    # normalize protect on exit
-    if($ProtectOnExit -eq 1){
-      $ProtectOnExit = $True
-    }
-    if($ProtectOnExit -eq 0){
-      $ProtectOnExit = $False
     }
 
     # Show option for type
@@ -195,13 +187,13 @@ function New-CyaConfig {
     }
 
     if($Type -eq "File"){
-      if($ProtectOnExit -eq $Null){
-        $Options = [System.Management.Automation.Host.ChoiceDescription[]] @("&Yes", "&No")
+      if($ProtectOnExit -eq -1){
+        $Options = [System.Management.Automation.Host.ChoiceDescription[]] @("&No", "&Yes")
         $Message = "Would you like to automatically run Protect-CyaConfig (deletes unencrypted config files) on this config when unloading the Cya module or exiting powershell?"
-        $Option = $host.UI.PromptForChoice("Protect on exit:", $Message, $Options, 0)
+        $Option = $host.UI.PromptForChoice("Protect on exit:", $Message, $Options, 1)
         Switch($Option){
-          0 { $ProtectOnExit = $True}
-          1 { $ProtectOnExit = $False}
+          0 { $ProtectOnExit = 0}
+          1 { $ProtectOnExit = 1}
         }
       }
 
@@ -253,14 +245,14 @@ function New-CyaConfig {
         $CyaConfig = [PSCustomObject]@{
           "Type" = "File"
           "CyaPassword" = $CyaPassword
-          "ProtectOnExit" = $ProtectOnExit
+          "ProtectOnExit" = [Bool]$ProtectOnExit
           "Files" = @($FileCollection)
         }
       }else{
         $CyaConfig = [PSCustomObject]@{
           "Type" = "File"
           "CyaPassword" = $CyaPassword
-          "ProtectOnExit" = $ProtectOnExit
+          "ProtectOnExit" = [Bool]$ProtectOnExit
           "Files" = $FileCollection
         }
       }
