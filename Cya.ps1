@@ -18,15 +18,3 @@ function Get-DecryptedAnsibleVaultString {
     Remove-Item $TempFile
   }
 }
-
-$OnRemoveScript = {
-  Get-CyaConfig -Unprotected | Where{($_.Type -eq "File") -and ($_.ProtectOnExit -eq $True)} | ForEach {
-    $CyaConfig = $_
-    if(Test-Path $CyaConfig.Item){
-      rm $CyaConfig.Item
-    }
-  }
-}
-
-$ExecutionContext.SessionState.Module.OnRemove += $OnRemoveScript
-Register-EngineEvent -SourceIdentifier ([System.Management.Automation.PsEngineEvent]::Exiting) -Action $OnRemoveScript
