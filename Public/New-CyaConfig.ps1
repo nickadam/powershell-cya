@@ -2,24 +2,24 @@ function New-CyaConfig {
   [CmdletBinding()]
   param(
     [Parameter(Mandatory=$true)]
-    $Name,
+    [String]$Name,
 
     [ValidateSet("EnvVar", "File")]
-    $Type,
+    [String]$Type,
 
-    $EnvVarName,
-    $EnvVarValue,
-    $EnvVarSecureString,
-    $EnvVarCollection,
+    [String]$EnvVarName,
+    [String]$EnvVarValue,
+    [SecureString]$EnvVarSecureString,
+    [Object]$EnvVarCollection,
 
     [Parameter(ValueFromPipeline)]
-    $File,
+    [Object]$File,
 
     [ValidateSet($True, $False, 1, 0)]
     $ProtectOnExit,
 
-    $CyaPassword="Default",
-    $Password
+    [String]$CyaPassword="Default",
+    [SecureString]$Password
   )
 
   begin {
@@ -92,7 +92,8 @@ function New-CyaConfig {
       }
     }
 
-    $ConfigPath = Join-Path -Path (Get-CyaConfigPath) -ChildPath $Name
+    $CyaConfigPath = Get-CyaConfigPath
+    $ConfigPath = Join-Path -Path $CyaConfigPath -ChildPath $Name
 
     # Check if config already exists
     if(Test-Path $ConfigPath){
@@ -148,6 +149,7 @@ function New-CyaConfig {
 
       # nothing to do
       if(-not $EnvVarCollection){
+        Write-Warning "Nothing to do"
         return
       }
 
@@ -171,24 +173,24 @@ function New-CyaConfig {
         $EnvVarCollection = $EnvVarCollectionList
       }
 
-      $CyaConfigEnvVarCollection = $EnvVarCollection | ConvertTo-Cipherbundle -Key $Key
+      $Cipherbundle = $EnvVarCollection | ConvertTo-Cipherbundle -Key $Key -Name $Name
 
-      if($CyaConfigEnvVarCollection.length -eq 1){
+      if($Cipherbundle.length -eq 1){
         $CyaConfig = [PSCustomObject]@{
           "Type" = "EnvVar"
           "CyaPassword" = $CyaPassword
-          "Variables" = @($CyaConfigEnvVarCollection)
+          "Variables" = @($Cipherbundle)
         }
       }else{
         $CyaConfig = [PSCustomObject]@{
           "Type" = "EnvVar"
           "CyaPassword" = $CyaPassword
-          "Variables" = $CyaConfigEnvVarCollection
+          "Variables" = $Cipherbundle
         }
       }
 
-      if(-not (Test-Path (Get-CyaConfigPath))){
-        mkdir -p (Get-CyaConfigPath) | Out-Null
+      if(-not (Test-Path $CyaConfigPath)){
+        mkdir -p $CyaConfigPath | Out-Null
       }
     }
 
@@ -225,6 +227,7 @@ function New-CyaConfig {
 
       # nothing to do
       if(-not $File){
+        Write-Warning "Nothing to do"
         return
       }
 
@@ -244,7 +247,7 @@ function New-CyaConfig {
       $Key = Get-Key -CyaPassword $CyaPassword -Password $Password
 
       # # encrypt all the files
-      $FileCollection = $File | Get-Item | ConvertTo-Cipherbundle -Key $Key
+      $FileCollection = $File | Get-Item | ConvertTo-Cipherbundle -Key $Key -Name $Name
 
       if($FileCollection.length -eq 1){
         $CyaConfig = [PSCustomObject]@{
@@ -265,11 +268,12 @@ function New-CyaConfig {
 
     # nothing to do
     if(-not $CyaConfig){
+      Write-Warning "Nothing to do"
       return
     }
 
     # write config file
-    $CyaConfig | ConvertTo-Json -Depth 3 | Out-File -Encoding Default $ConfigPath
+    $CyaConfig | ConvertTo-Json | Out-File -Encoding Default $ConfigPath
     Get-CyaConfig -Name $Name
   }
 }
