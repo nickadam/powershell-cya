@@ -2,8 +2,6 @@ function ConvertFrom-Cipherbundle {
   [CmdletBinding()]
   param([Parameter(ValueFromPipeline)]$Cipherbundle, $Key)
   process {
-    $Password = ConvertTo-SecureString -String $Key -AsPlainText -Force
-
     # get decrypted bytes from wherever
     if($Cipherbundle.CiphertextFile){
       $Bytes = [System.IO.File]::ReadAllBytes($Cipherbundle.CiphertextFile)
@@ -15,7 +13,7 @@ function ConvertFrom-Cipherbundle {
       "Hmac" = $Cipherbundle.Hmac
       "Ciphertext" = $Bytes
     }
-    $Bytes = Get-DecryptedBin -EncryptedBin $EncryptedBin -Password $Password
+    $Bytes = Get-DecryptedBin -EncryptedBin $EncryptedBin -Password $Key
 
     if($Cipherbundle.Type -eq "EnvVar"){
       $Value = ConvertFrom-ByteArray -ToString -ByteArray $Bytes

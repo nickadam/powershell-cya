@@ -5,7 +5,7 @@ Function Get-EncryptedBin {
     [OutputType([PSCustomObject])]
     param(
         [Parameter(Position=0, Mandatory=$true, ValueFromPipeline, ValueFromPipelineByPropertyName)] [Array]$Bytes,
-        [Parameter(Position=1, Mandatory=$true)] [SecureString]$Password
+        [Parameter(Position=1, Mandatory=$true)] [String]$Password
     )
     begin {
       $AllBytes = @()

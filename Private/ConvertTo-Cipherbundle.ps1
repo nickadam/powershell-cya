@@ -7,7 +7,6 @@ function ConvertTo-Cipherbundle {
   )
   process {
     $Salt = Get-RandomString
-    $Password = ConvertTo-SecureString -String $Key -AsPlainText -Force
 
     # get next filename
     $BinsPath = (Get-CyaConfigPath) -Replace "configs$", "bins"
@@ -19,7 +18,7 @@ function ConvertTo-Cipherbundle {
 
     if($Item.GetType().Name -eq "FileInfo"){
       $Hash = Get-Sha256Hash -File $Item -Salt $Salt
-      $EncryptedBin = ConvertTo-ByteArray -File $Item | Get-EncryptedBin -Password $Password
+      $EncryptedBin = ConvertTo-ByteArray -File $Item | Get-EncryptedBin -Password $Key
       if($EncryptedBin.Ciphertext.length -gt 1024){
 
         # make directory
@@ -54,7 +53,7 @@ function ConvertTo-Cipherbundle {
 
     if($Item.GetType().Name -eq "PSCustomObject"){
       $Hash = Get-Sha256Hash -String $Item.Value -Salt $Salt
-      $EncryptedBin = ConvertTo-ByteArray -String $Item.Value | Get-EncryptedBin -Password $Password
+      $EncryptedBin = ConvertTo-ByteArray -String $Item.Value | Get-EncryptedBin -Password $Key
       if($EncryptedBin.Ciphertext.length -gt 1024){
         # make directory
         if(-not (Test-Path $BinsPath)){

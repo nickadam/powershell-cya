@@ -16,7 +16,8 @@ function Get-Key {
   $Bytes = [System.Convert]::FromBase64String($EncryptedBin.Ciphertext)
   $EncryptedBin.Ciphertext = $Bytes
 
-  $Bytes = Get-DecryptedBin -EncryptedBin $EncryptedBin -Password $Password
+  $Key = Get-SecureStringText $Password
+  $Bytes = Get-DecryptedBin -EncryptedBin $EncryptedBin -Password $Key
 
   ConvertFrom-ByteArray -ToString -ByteArray $Bytes
 }

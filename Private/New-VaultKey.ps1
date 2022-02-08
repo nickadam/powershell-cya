@@ -11,7 +11,7 @@ Function New-VaultKey {
     operations.
 
     .PARAMETER Password
-    [SecureString] The password used to derive the key.
+    [String] The password used to derive the key.
 
     .PARAMETER Salt
     [byte[]] The salt used to derive the key.
@@ -37,10 +37,10 @@ Function New-VaultKey {
     [CmdletBinding()]
     [OutputType([Object[]])]
     param(
-        [Parameter(Mandatory=$true)] [SecureString]$Password,
+        [Parameter(Mandatory=$true)] [String]$Password,
         [Parameter(Mandatory=$true)] [byte[]]$Salt
     )
-    $derived_key = New-PBKDF2Key -Algorithm SHA256 -Password $password -Salt $Salt -Length 80 -Iterations 10000
+    $derived_key = New-PBKDF2Key -Algorithm SHA256 -Password $Password -Salt $Salt -Length 80 -Iterations 10000
     $cipher_key = $derived_key[0..31]
     $hmac_key = $derived_key[32..63]
     $nonce = $derived_key[64..79]

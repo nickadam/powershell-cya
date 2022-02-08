@@ -5,7 +5,7 @@ Function Get-DecryptedBin {
     [OutputType([Array])]
     param(
         [Parameter(Position=0, Mandatory=$true, ValueFromPipeline, ValueFromPipelineByPropertyName)] [Object]$EncryptedBin,
-        [Parameter(Position=1, Mandatory=$true)] [SecureString]$Password
+        [Parameter(Position=1, Mandatory=$true)] [String]$Password
     )
 
     $salt = Convert-HexToByte -Value $EncryptedBin.Salt
