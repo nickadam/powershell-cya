@@ -1,46 +1,5 @@
 # Ciphertext Your Assets
 
-function Get-Sha256Hash {
-  param($File, $String, $Salt)
-
-  $Sha256 = [System.Security.Cryptography.HashAlgorithm]::Create("sha256")
-
-  if($File){
-    $File = Get-Item $File -ErrorAction Stop
-    if($Salt){
-      $FileBytes = [System.IO.File]::ReadAllBytes($File)
-      $SaltBytes = [System.Text.Encoding]::UTF8.getBytes($Salt)
-      $hashBytes = $Sha256.ComputeHash($SaltBytes + $FileBytes)
-      $hash = [System.BitConverter]::ToString($hashBytes)
-      $hash.toLower() -replace "-", ""
-    }else{
-      # just file path, use get-filehash
-      (Get-FileHash $File).Hash.toLower()
-    }
-  }elseif($String){
-    if($Salt){
-      $String = $Salt + $String
-    }
-    $hashBytes = $Sha256.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($String))
-    $hash = [System.BitConverter]::ToString($hashBytes)
-    $hash.toLower() -replace "-", ""
-  }
-}
-
-function Get-Base64FromFile {
-  [CmdletBinding()]
-  param([Parameter(ValueFromPipeline)]$File)
-  $File = Get-Item $File -ErrorAction Stop
-  $FileBytes = [System.IO.File]::ReadAllBytes($File)
-  [System.Convert]::ToBase64String($FileBytes)
-}
-
-function Get-SecureStringText {
-  [CmdletBinding()]
-  param([Parameter(ValueFromPipeline)]$SecureString)
-  (New-Object PSCredential ".",$SecureString).GetNetworkCredential().Password
-}
-
 function Get-EncryptedAnsibleVaultString {
   param($String, $Key)
   if($String){
@@ -57,59 +16,6 @@ function Get-DecryptedAnsibleVaultString {
     $CipherTextString | Out-File -Encoding Default $TempFile
     Get-DecryptedAnsibleVault -Path $TempFile -Password $Password
     Remove-Item $TempFile
-  }
-}
-
-function ConvertFrom-Cipherbundle {
-  [CmdletBinding()]
-  param([Parameter(ValueFromPipeline)]$Cipherbundle, $Key)
-  process {
-    if($Cipherbundle.Type -eq "EnvVar"){
-      $Value = Get-DecryptedAnsibleVaultString -CipherTextString $Cipherbundle.Ciphertext -Key $Key
-      [System.Environment]::SetEnvironmentVariable($Cipherbundle.Name, $Value)
-    }
-    if($Cipherbundle.Type -eq "File"){
-      $FilePath = $Cipherbundle.FilePath
-      if(Test-Path $FilePath -PathType Leaf){
-        Write-Error "File $FilePath already exists" -ErrorAction Stop
-      }else{
-        $Base64 = Get-DecryptedAnsibleVaultString -CipherTextString $Cipherbundle.Ciphertext -Key $Key
-        $FileBytes = [System.Convert]::FromBase64String($Base64)
-        [System.IO.File]::WriteAllBytes($FilePath, $FileBytes)
-        Get-Item $FilePath
-      }
-    }
-  }
-}
-
-function ConvertTo-Cipherbundle {
-  [CmdletBinding()]
-  param([Parameter(ValueFromPipeline)]$Item, $Key, $Name)
-  process {
-    if($Item.GetType().Name -eq "FileInfo"){
-      $Salt = Get-RandomString
-      $Hash = Get-Sha256Hash -File $Item -Salt $Salt
-      $Base64 = Get-Base64FromFile -File $Item
-      $Ciphertext = Get-EncryptedAnsibleVaultString -String $Base64 -Key $Key
-      [PSCustomObject]@{
-        "Type" = "File"
-        "FilePath" = $Item.FullName
-        "Salt" = $Salt
-        "Hash" = $Hash
-        "Ciphertext" = $Ciphertext
-      }
-    }
-    if($Item.GetType().Name -eq "PSCustomObject"){
-      $Salt = Get-RandomString
-      $Hash = Get-Sha256Hash -String $Item.Value -Salt $Salt
-      [PSCustomObject]@{
-        "Type" = "EnvVar"
-        "Name" = $Item.Name
-        "Salt" = $Salt
-        "Hash" = $Hash
-        "Ciphertext" = Get-EncryptedAnsibleVaultString -String $Item.Value -Key $Key
-      }
-    }
   }
 }
 
