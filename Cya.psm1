@@ -18,7 +18,10 @@ $ExportModule = @{
 }
 
 $OnRemoveScript = {
-  Get-CyaConfig -Unprotected | Where-Object{($_.ProtectOnExit -eq $True)} | Protect-CyaConfig
+  $ToProtect = Get-CyaConfig -Unprotected | Where-Object{($_.ProtectOnExit -eq $True)}
+  if($ToProtect){
+    $ToProtect | Protect-CyaConfig
+  }
 }
 
 if(-not $Env:CYA_DISABLE_UNPROTECTED_MESSAGE){
