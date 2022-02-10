@@ -20,19 +20,9 @@ Describe "Get-NewPassword" {
     BeforeAll {
       Mock Read-Host {ConvertTo-SecureString -String "password" -AsPlainText -Force} -ParameterFilter { $Prompt -eq "Enter new password" }
       Mock Read-Host {ConvertTo-SecureString -String "password1" -AsPlainText -Force}
-
-      $stopped = $False
-      try {
-        $result = Get-SecureStringText (Get-NewPassword)
-      } catch {
-        $stopped = $True
-      }
-    }
-    It "Should stop" {
-      $stopped | Should -Be $True
     }
     It "Shouldn't return anything" {
-      $result | Should -Be $null
+      { Get-SecureStringText (Get-NewPassword) } | Should -Throw
     }
   }
 }
