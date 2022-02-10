@@ -1,6 +1,6 @@
 
-$Private = Get-ChildItem -Path (Join-Path $PSScriptRoot "Private" "*.ps1")
-$Public = Get-ChildItem -Path (Join-Path $PSScriptRoot "Public" "*.ps1")
+$Private = Get-ChildItem -Path (Join-Path  -Path $PSScriptRoot -ChildPath  (Join-Path -Path "Private" -ChildPath "*.ps1"))
+$Public = Get-ChildItem -Path (Join-Path  -Path $PSScriptRoot -ChildPath  (Join-Path -Path "Public" -ChildPath "*.ps1"))
 
 ($Private + $Public) | ForEach-Object {
   try {
