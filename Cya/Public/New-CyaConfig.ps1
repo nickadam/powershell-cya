@@ -1,4 +1,48 @@
 function New-CyaConfig {
+  <#
+  .SYNOPSIS
+  Creates CyaConfigs.
+
+  .DESCRIPTION
+  A CyaConfig is an encrypted collection of files or environment variables. 
+
+  .PARAMETER Name
+  [String] The name of the CyaPasswords
+
+  .PARAMETER Password
+  [SecureString] Your password to decrypt the CyaPassword
+
+  .OUTPUTS
+  $Null
+
+  .NOTES
+    Author: Nick Vissari
+
+  .EXAMPLE
+  New-CyaPassword
+
+  cmdlet New-CyaPassword at command pipeline position 1
+  Supply values for the following parameters:
+  Name: sample
+  Enter new password: *************
+  Confirm new password: *************
+
+
+  Description
+  -----------
+  Prompts for missing params
+
+  .EXAMPLE
+  New-CyaPassword -Name sample -Password (ConvertTo-SecureString -AsPlainText -Force "dont do this")
+
+
+  Description
+  -----------
+  Inscure way to set a password using plain text string. Don't do this. The
+  password will end up in your command history.
+
+  #>
+
   [CmdletBinding(SupportsShouldProcess,
   DefaultParameterSetName = "SomethingFromPipeline")]
   param(
