@@ -1,18 +1,18 @@
 function Get-NewPassword {
   param(
     [Parameter(Mandatory)]
-    [SecureString]$Password,
+    [SecureString]${Enter new password},
 
     [Parameter(Mandatory)]
-    [SecureString]$ConfirmPassword
+    [SecureString]${Confirm new password}
   )
 
-  $password1 = Get-SecureStringText -SecureString $Password
-  $password2 = Get-SecureStringText -SecureString $ConfirmPassword
+  $password1 = Get-SecureStringText -SecureString ${Enter new password}
+  $password2 = Get-SecureStringText -SecureString ${Confirm new password}
 
   if($password1 -ne $password2){
     Throw "Passwords do not match"
   }
 
-  return $Password
+  ${Enter new password}
 }
