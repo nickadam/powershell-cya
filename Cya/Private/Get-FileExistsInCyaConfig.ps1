@@ -1,5 +1,8 @@
 function Get-FileExistsInCyaConfig {
   param($Cipherbundle)
+  if(-not $Cipherbundle){
+    return $False
+  }
   Get-CyaConfigPath |
     Get-ChildItem |
     ForEach-Object {
