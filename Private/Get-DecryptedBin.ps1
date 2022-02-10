@@ -5,14 +5,15 @@ Function Get-DecryptedBin {
     [OutputType([Array])]
     param(
         [Parameter(Position=0, Mandatory=$true, ValueFromPipeline, ValueFromPipelineByPropertyName)] [Object]$EncryptedBin,
-        [Parameter(Position=1, Mandatory=$true)] [String]$Password
+        [alias("Password")]
+        [Parameter(Position=1, Mandatory=$true)] [String]$Key
     )
 
     $salt = Convert-HexToByte -Value $EncryptedBin.Salt
     $expected_hmac = $EncryptedBin.Hmac
     $encrypted_bytes = $EncryptedBin.Ciphertext
 
-    $cipher_key, $hmac_key, $nonce = New-VaultKey -Password $password -Salt $salt
+    $cipher_key, $hmac_key, $nonce = New-VaultKey -Password $Key -Salt $salt
 
     $actual_hmac = Get-HMACValue -Value $encrypted_bytes -Key $hmac_key
     if ($actual_hmac -ne $expected_hmac) {

@@ -18,7 +18,8 @@ function New-CyaConfig {
     [ValidateSet(0, 1)]
     [Int]$ProtectOnExit = -1,
 
-    [String]$CyaPassword="Default",
+    [alias("CyaPassword")]
+    [String]$CyaPwName="Default",
     [SecureString]$Password
   )
 
@@ -33,6 +34,7 @@ function New-CyaConfig {
   }
 
   end {
+    $CyaPassword = $CyaPwName
     # Items could be a list of files or environment variables
     if($Items){
       $File = $False

@@ -10,7 +10,7 @@ Function New-VaultKey {
     Generates the Cipher, HMAC, and AES CTR Nonce used as part of the Vault
     operations.
 
-    .PARAMETER Password
+    .PARAMETER TextKey
     [String] The password used to derive the key.
 
     .PARAMETER Salt
@@ -37,10 +37,11 @@ Function New-VaultKey {
     [CmdletBinding()]
     [OutputType([Object[]])]
     param(
-        [Parameter(Mandatory=$true)] [String]$Password,
+        [alias("Password")]
+        [Parameter(Mandatory=$true)] [String]$TextKey,
         [Parameter(Mandatory=$true)] [byte[]]$Salt
     )
-    $derived_key = New-PBKDF2Key -Algorithm SHA256 -Password $Password -Salt $Salt -Length 80 -Iterations 10000
+    $derived_key = New-PBKDF2Key -Algorithm SHA256 -Password $TextKey -Salt $Salt -Length 80 -Iterations 10000
     $cipher_key = $derived_key[0..31]
     $hmac_key = $derived_key[32..63]
     $nonce = $derived_key[64..79]

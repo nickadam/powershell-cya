@@ -2,13 +2,15 @@ function Get-Key {
   [CmdletBinding()]
   param(
     [Parameter(Position=0, ValueFromPipeline)]
-    [String]$CyaPassword = "Default",
+    [alias("CyaPassword")]
+    [String]$CyaPwName = "Default",
 
     [Parameter(Position=1, Mandatory=$true)]
-    [SecureString]$Password
+    [alias("Password")]
+    [SecureString]$SSKey
   )
 
-  $PasswordPath = Join-Path -Path (Get-CyaPasswordPath) -ChildPath $CyaPassword
+  $PasswordPath = Join-Path -Path (Get-CyaPasswordPath) -ChildPath $CyaPwName
 
   $EncryptedBin = Get-Content $PasswordPath | ConvertFrom-Json
 
@@ -16,7 +18,7 @@ function Get-Key {
   $Bytes = [System.Convert]::FromBase64String($EncryptedBin.Ciphertext)
   $EncryptedBin.Ciphertext = $Bytes
 
-  $Key = Get-SecureStringText $Password
+  $Key = Get-SecureStringText $SSKey
   $Bytes = Get-DecryptedBin -EncryptedBin $EncryptedBin -Password $Key
 
   ConvertFrom-ByteArray -ToString -ByteArray $Bytes

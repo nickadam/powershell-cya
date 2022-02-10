@@ -1,5 +1,5 @@
 function New-CyaPassword {
-  param($Name="Default", $Password)
+  param($Name="Default", [SecureString]$Password)
 
   $PasswordPath = Join-Path -Path (Get-CyaPasswordPath) -ChildPath $Name
 

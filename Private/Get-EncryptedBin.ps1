@@ -5,7 +5,8 @@ Function Get-EncryptedBin {
     [OutputType([PSCustomObject])]
     param(
         [Parameter(Position=0, Mandatory=$true, ValueFromPipeline, ValueFromPipelineByPropertyName)] [Array]$Bytes,
-        [Parameter(Position=1, Mandatory=$true)] [String]$Password
+        [alias("Password")]
+        [Parameter(Position=1, Mandatory=$true)] [String]$Key
     )
     begin {
       $AllBytes = @()
@@ -22,7 +23,7 @@ Function Get-EncryptedBin {
       $random_gen = New-Object -TypeName System.Security.Cryptography.RNGCryptoServiceProvider
       $random_gen.GetBytes($salt)
 
-      $cipher_key, $hmac_key, $nonce = New-VaultKey -Password $Password -Salt $salt
+      $cipher_key, $hmac_key, $nonce = New-VaultKey -Password $Key -Salt $salt
 
       # While AES CTR is a stream mode, Ansible still pads the bytes we we need
       # to do that here

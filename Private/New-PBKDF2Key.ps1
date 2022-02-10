@@ -21,7 +21,7 @@ Function New-PBKDF2Key {
     be one of the algorithm identifiers specified in
     https://msdn.microsoft.com/en-us/library/windows/desktop/aa375534.aspx.
 
-    .PARAMETER Password
+    .PARAMETER TextKey
     [String] The password used as the part of the PBKDF2 function.
 
     .PARAMETER Salt
@@ -49,7 +49,8 @@ Function New-PBKDF2Key {
     [OutputType([byte[]])]
     param(
         [Parameter(Mandatory=$true)] [String]$Algorithm,
-        [Parameter(Mandatory=$true)] [String]$Password,
+        [alias("Password")]
+        [Parameter(Mandatory=$true)] [String]$TextKey,
         [Parameter(Mandatory=$true)] [byte[]]$Salt,
         [Parameter(Mandatory=$true)] [UInt32]$Length,
         [Parameter(Mandatory=$true)] [UInt64]$Iterations
@@ -60,7 +61,7 @@ Function New-PBKDF2Key {
     $is_core_clr = Get-Variable -Name IsCoreCLR -ErrorAction Ignore
     if ($null -ne $is_core_clr -and $is_core_clr.Value -eq $true) {
         $algo = [System.Security.Cryptography.HashAlgorithmName]$Algorithm
-        $pass_str = $Password
+        $pass_str = $TextKey
         try {
             $provider = New-Object -TypeName System.Security.Cryptography.Rfc2898DeriveBytes -ArgumentList @(
                 $pass_str,
@@ -107,7 +108,7 @@ Function New-PBKDF2Key {
 
     try {
         $key = New-Object -TypeName byte[] -ArgumentList $Length
-        $pass_str = $Password
+        $pass_str = $TextKey
         try {
             $pass_bytes = [System.Text.Encoding]::UTF8.GetBytes($pass_str)
             $res = Invoke-Win32Api -DllName Bcrypt.dll `
