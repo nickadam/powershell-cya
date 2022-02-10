@@ -1,17 +1,18 @@
 function New-CyaPassword {
   [CmdletBinding(SupportsShouldProcess)]
-  param($Name="Default", [SecureString]$Password)
+  param(
+    [Parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
+    [String]$Name = "Default",
+    [SecureString]$Password = (Get-NewPassword)
+  )
 
   $PasswordPath = Join-Path -Path (Get-CyaPasswordPath) -ChildPath $Name
 
   if(Test-Path $PasswordPath){
-    Write-Error -Message "Password $Name already exists" -ErrorAction Stop
+    Throw "Password $Name already exists"
   }
 
-  if(!$Password){
-    $Password = Get-NewPassword
-  }
-
+  # make missing directories
   if(-not (Test-Path (Get-CyaPasswordPath))){
     mkdir -p (Get-CyaPasswordPath)
   }
