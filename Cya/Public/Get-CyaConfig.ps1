@@ -7,29 +7,6 @@ function Get-CyaConfig {
     return
   }
 
-  function Get-ConfigSummary {
-    [CmdletBinding()]
-    param([Parameter(ValueFromPipeline)]$Config)
-    $Type = $Config.Type
-    $ProtectOnExit = $Config.ProtectOnExit
-    $Variables = ''
-    $Files = ''
-    if($Type -eq "EnvVar"){
-      $ProtectOnExit = $True
-      $Variables = $Config.Variables.Name
-    }
-    if($Type -eq "File"){
-      $Files = $Config.Files.FilePath
-    }
-    [PSCustomObject]@{
-      "Type" = $Type
-      "CyaPassword" = $Config.CyaPassword
-      "ProtectOnExit" = $ProtectOnExit
-      "Variables" = $Variables
-      "Files" = $Files
-    }
-  }
-
   # error if not found
   if($Name){
     $ConfigPath = Join-Path -Path $CyaConfigPath -ChildPath $Name

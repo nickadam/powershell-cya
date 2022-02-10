@@ -10,16 +10,18 @@ function Get-Key {
     [SecureString]$SSKey
   )
 
-  $PasswordPath = Join-Path -Path (Get-CyaPasswordPath) -ChildPath $CyaPwName
+  process {
+    $PasswordPath = Join-Path -Path (Get-CyaPasswordPath) -ChildPath $CyaPwName
 
-  $EncryptedBin = Get-Content $PasswordPath | ConvertFrom-Json
+    $EncryptedBin = Get-Content $PasswordPath | ConvertFrom-Json
 
-  # Convert Ciphertext from base64
-  $Bytes = [System.Convert]::FromBase64String($EncryptedBin.Ciphertext)
-  $EncryptedBin.Ciphertext = $Bytes
+    # Convert Ciphertext from base64
+    $Bytes = [System.Convert]::FromBase64String($EncryptedBin.Ciphertext)
+    $EncryptedBin.Ciphertext = $Bytes
 
-  $Key = Get-SecureStringText $SSKey
-  $Bytes = Get-DecryptedBin -EncryptedBin $EncryptedBin -Password $Key
+    $Key = Get-SecureStringText $SSKey
+    $Bytes = Get-DecryptedBin -EncryptedBin $EncryptedBin -Password $Key
 
-  ConvertFrom-ByteArray -ToString -ByteArray $Bytes
+    ConvertFrom-ByteArray -ToString -ByteArray $Bytes
+  }
 }

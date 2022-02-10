@@ -3,18 +3,26 @@ function Get-CyaPassword {
   param(
     [Parameter(ValueFromPipeline)][String]$Name
   )
-  $CyaPasswordPath = Get-CyaPasswordPath
-  if(-not (Test-Path $CyaPasswordPath)){
-    return
-  }
-  if($Name){
-    $PasswordPath = Join-Path -Path $CyaPasswordPath -ChildPath $Name
-    if(Test-Path $PasswordPath -PathType Leaf){
-      Get-Item $PasswordPath
-    }else{
-      Write-Error -Message "CyaPassword `"$Name`" not found"
+
+  begin {
+    $CyaPasswordPath = Get-CyaPasswordPath
+    if(-not (Test-Path $CyaPasswordPath)){
+      return
     }
-  }else{
-    Get-ChildItem $CyaPasswordPath
+
+    if(-not $Name){
+      Get-ChildItem $CyaPasswordPath
+      return
+    }
+  }
+
+  process {
+    $PasswordPath = Join-Path -Path $CyaPasswordPath -ChildPath $Name
+
+    if(-not (Test-Path $PasswordPath -PathType Leaf)){
+      Throw "CyaPassword `"$Name`" not found"
+    }
+
+    Get-Item $PasswordPath
   }
 }

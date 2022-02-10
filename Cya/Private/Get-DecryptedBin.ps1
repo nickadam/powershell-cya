@@ -9,22 +9,24 @@ Function Get-DecryptedBin {
         [Parameter(Position=1, Mandatory=$true)] [String]$Key
     )
 
-    $salt = Convert-HexToByte -Value $EncryptedBin.Salt
-    $expected_hmac = $EncryptedBin.Hmac
-    $encrypted_bytes = $EncryptedBin.Ciphertext
+    process {
+      $salt = Convert-HexToByte -Value $EncryptedBin.Salt
+      $expected_hmac = $EncryptedBin.Hmac
+      $encrypted_bytes = $EncryptedBin.Ciphertext
 
-    $cipher_key, $hmac_key, $nonce = New-VaultKey -Password $Key -Salt $salt
+      $cipher_key, $hmac_key, $nonce = New-VaultKey -Password $Key -Salt $salt
 
-    $actual_hmac = Get-HMACValue -Value $encrypted_bytes -Key $hmac_key
-    if ($actual_hmac -ne $expected_hmac) {
-        throw [System.ArgumentException]"HMAC verification failed, was the wrong password entered?"
+      $actual_hmac = Get-HMACValue -Value $encrypted_bytes -Key $hmac_key
+      if ($actual_hmac -ne $expected_hmac) {
+          throw [System.ArgumentException]"HMAC verification failed, was the wrong password entered?"
+      }
+
+      $decrypted_bytes = Invoke-AESCTRCycle -Value $encrypted_bytes -Key $cipher_key -Nonce $nonce
+
+      # Need to manually remove the padding as AES CTR has no concept of padding
+      # it is a stream mode
+      $unpadded_bytes = Remove-Pkcs7Padding -Value $decrypted_bytes -BlockSize 128
+
+      $unpadded_bytes
     }
-
-    $decrypted_bytes = Invoke-AESCTRCycle -Value $encrypted_bytes -Key $cipher_key -Nonce $nonce
-
-    # Need to manually remove the padding as AES CTR has no concept of padding
-    # it is a stream mode
-    $unpadded_bytes = Remove-Pkcs7Padding -Value $decrypted_bytes -BlockSize 128
-
-    return $unpadded_bytes
 }
