@@ -4,19 +4,15 @@ function Get-CyaPassword {
     [Parameter(ValueFromPipeline)][String]$Name
   )
 
-  begin {
+  process {
     $CyaPasswordPath = Get-CyaPasswordPath
     if(-not (Test-Path $CyaPasswordPath)){
       return
     }
-
     if(-not $Name){
       Get-ChildItem $CyaPasswordPath
       return
     }
-  }
-
-  process {
     $PasswordPath = Join-Path -Path $CyaPasswordPath -ChildPath $Name
 
     if(-not (Test-Path $PasswordPath -PathType Leaf)){
