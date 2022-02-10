@@ -1,48 +1,65 @@
 function New-CyaConfig {
-  [CmdletBinding(SupportsShouldProcess)]
+  [CmdletBinding(SupportsShouldProcess,
+  DefaultParameterSetName = "SomethingFromPipeline")]
   param(
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory)]
     [String]$Name,
 
-    [ValidateSet("EnvVar", "File")]
-    [String]$Type,
-
+    [Parameter(Mandatory,
+    ParameterSetName="EnvVar")]
     [String]$EnvVarName,
-    [String]$EnvVarValue,
-    [SecureString]$EnvVarSecureString,
+
+    [Parameter(Mandatory,
+    ParameterSetName="EnvVar")]
+    [Object]$EnvVarValue,
+
+    [Parameter(Mandatory,
+    ParameterSetName="EnvVarCollection")]
     [Object]$EnvVarCollection,
 
-    [Parameter(ValueFromPipeline)]
+    [Parameter(Mandatory,
+    ParameterSetName="FileOrFiles")]
     [Object]$File,
 
+    [Parameter(ParameterSetName="FileOrFiles")]
     [ValidateSet(0, 1)]
     [Int]$ProtectOnExit = -1,
 
     [alias("CyaPassword")]
     [String]$CyaPwName="Default",
-    [SecureString]$Password
+    [SecureString]$Password,
+
+    [Parameter(ValueFromPipeline,
+    ParameterSetName="SomethingFromPipeline")]
+    [Object]$InputObject,
+
+    [ValidateSet("EnvVar", "File")]
+    [String]$Type
   )
 
   begin {
-    $Items = @()
+    $InputObjects = @()
   }
 
   process {
-    if($File){
-      $Items += $File
+    if($InputObject){
+      $InputObjects += $InputObject
     }
   }
 
   end {
     $CyaPassword = $CyaPwName
-    # Items could be a list of files or environment variables
-    if($Items){
+    # InputObjects could be a list of files or environment variables
+    if($InputObjects){
       $File = $False
       $EnvVarCollection = @()
-      ForEach($Item in $Items){
-        if(Get-Item $Item -ErrorAction SilentlyContinue){
+      ForEach($Item in $InputObjects){
+        if($Type -eq "File" -or (Get-Item $Item -ErrorAction SilentlyContinue)){
+          if($File){
+            Continue
+          }
           # must be a list of files
-          $File = $Items
+          $File = $InputObjects
         }else{
           # must be a list of environment variables
           $ItemEnvVarName = $Item
@@ -50,7 +67,7 @@ function New-CyaConfig {
           if(-not $ItemEnvVarValue){
             $Message = "The piped item `"$ItemEnvVarName`" is not a file or a " +
             "set environment variable and can't be added to a collection."
-            Write-Error $Message -ErrorAction Stop
+            Throw $Message
           }
           $EnvVarCollection += [PSCustomObject]@{
             "Name" = $ItemEnvVarName
@@ -60,8 +77,9 @@ function New-CyaConfig {
       }
     }
 
+    # create new CyaPassword
     if(-not (Get-CyaPassword -Name $CyaPassword -EA SilentlyContinue)){
-      Write-Warning "CyaPassword `"$CyaPassword`" password not found, creating now with New-CyaPassword."
+      Write-Warning "CyaPassword `"$CyaPassword`" not found, creating now with New-CyaPassword."
       if(!$Password){
         $Password = Get-NewPassword
       }
@@ -91,7 +109,7 @@ function New-CyaConfig {
 
     # Check if config already exists
     if(Test-Path $ConfigPath){
-      Write-Error -Message "Config `"$Name`" already exists" -ErrorAction Stop
+      Throw "Config `"$Name`" already exists"
     }
 
     # Create Environment Variable config
@@ -116,28 +134,34 @@ function New-CyaConfig {
         $n = 0
         while($Collecting){
           $n++
-          Write-Host -NoNewline "Variable $n name (Enter when done): "
-          $EnvVarName = Read-Host
-          if($EnvVarName){
-            $SetValue = Get-EnvVarValueByName -Name $EnvVarName
-            if($SetValue){
-              Write-Host -NoNewline "$EnvVarName value [$SetValue]: "
-            }else{
-              Write-Host -NoNewline "$EnvVarName value : "
-            }
-            $EnvVarSecureString = Read-Host -AsSecureString
-            $EnvVarValue = Get-SecureStringText -SecureString $EnvVarSecureString
-            if($SetValue -and (-not $EnvVarValue)){
-              $EnvVarValue = $SetValue
-            }
-            $EnvVar = [PSCustomObject]@{
-              "Name" = $EnvVarName
-              "Value" = $EnvVarValue
-            }
-            $EnvVarCollection += $EnvVar
-          }else{
+          $EnvVarName = Read-Host -Prompt "Variable $n name (Enter when done): "
+
+          # done collecting
+          if(-not $EnvVarName){
             $Collecting = $False
+            Continue
           }
+
+          $Message = "$EnvVarName value : "
+
+          # check if environment varialbe is currently set
+          $SetValue = Get-EnvVarValueByName -Name $EnvVarName
+          if($SetValue){
+            $Message = "$EnvVarName value [$SetValue]: "
+          }
+          $EnvVarSecureString = Read-Host -AsSecureString -Prompt $Message
+          $EnvVarValue = Get-SecureStringText -SecureString $EnvVarSecureString
+
+          # use current environment variable set
+          if($SetValue -and (-not $EnvVarValue)){
+            $EnvVarValue = $SetValue
+          }
+
+          $EnvVar = [PSCustomObject]@{
+            "Name" = $EnvVarName
+            "Value" = $EnvVarValue
+          }
+          $EnvVarCollection += $EnvVar
         }
       }
 
@@ -148,8 +172,7 @@ function New-CyaConfig {
       }
 
       if(-not $Password){
-        Write-Host -NoNewline "Enter password for CyaPassword `"$CyaPassword`": "
-        $Password = Read-Host -AsSecureString
+        $Password = Read-Host -Prompt "Enter password for CyaPassword `"$CyaPassword`": " -AsSecureString
       }
       $Key = Get-Key -CyaPassword $CyaPassword -Password $Password
 
@@ -182,13 +205,10 @@ function New-CyaConfig {
           "Variables" = $Cipherbundle
         }
       }
-
-      if(-not (Test-Path $CyaConfigPath)){
-        mkdir -p $CyaConfigPath | Out-Null
-      }
     }
 
     if($Type -eq "File"){
+      # set protect on exit
       if($ProtectOnExit -eq -1){
         $Options = [System.Management.Automation.Host.ChoiceDescription[]] @("&No", "&Yes")
         $Message = "Would you like to automatically run Protect-CyaConfig (deletes unencrypted config files) on this config when unloading the Cya module or exiting powershell?"
@@ -206,11 +226,10 @@ function New-CyaConfig {
         $n = 0
         while($Collecting){
           $n++
-          Write-Host -NoNewline "File $n path (Enter when done): "
-          $FilePath = Read-Host
+          $FilePath = Read-Host -Prompt "File $n path (Enter when done): "
           if($FilePath){
             if(-not (Test-Path $FilePath -PathType Leaf)){
-              Write-Error -Message "File $FilePath not found" -ErrorAction Stop
+              Throw "File $FilePath not found"
             }
             $File += $FilePath
           }else{
@@ -225,18 +244,17 @@ function New-CyaConfig {
         return
       }
 
-      # Check all files exist
+      # if files were explicitly specified as strings or something, check each one
       $File | ForEach-Object {
         $FilePath = $_
         if(-not (Test-Path $FilePath -PathType Leaf)){
-          Write-Error -Message "File $FilePath not found" -ErrorAction Stop
+          Throw "File $FilePath not found"
         }
       }
 
       # get the key
       if(-not $Password){
-        Write-Host -NoNewline "Enter password for CyaPassword `"$CyaPassword`": "
-        $Password = Read-Host -AsSecureString
+        $Password = Read-Host -Prompt "Enter password for CyaPassword `"$CyaPassword`": " -AsSecureString
       }
       $Key = Get-Key -CyaPassword $CyaPassword -Password $Password
 
@@ -264,6 +282,11 @@ function New-CyaConfig {
     if(-not $CyaConfig){
       Write-Warning "Nothing to do"
       return
+    }
+
+    # Create missing directory
+    if(-not (Test-Path $CyaConfigPath)){
+      mkdir -p $CyaConfigPath | Out-Null
     }
 
     # write config file
