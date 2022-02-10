@@ -1,5 +1,6 @@
 function Confirm-CipherbundleEnvVarHash {
   [CmdletBinding()]
+  [OutputType([Bool])]
   param([Parameter(ValueFromPipeline)]$Cipherbundle)
   process {
     $Name = $Cipherbundle.Name

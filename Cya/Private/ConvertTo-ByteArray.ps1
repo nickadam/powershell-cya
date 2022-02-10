@@ -1,6 +1,6 @@
 function ConvertTo-ByteArray {
   [CmdletBinding(DefaultParameterSetName="FromFile")]
-  [OutputType([Array])]
+  [OutputType([byte[]])]
   param(
     [Parameter(Position=0, Mandatory=$true, ParameterSetName="FromPipeline", ValueFromPipeline, DontShow)] [Object]$Item,
     [Parameter(Position=0, Mandatory=$true, ParameterSetName="FromString")] [String]$String,

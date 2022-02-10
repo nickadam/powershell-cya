@@ -1,5 +1,6 @@
 function Confirm-CipherbundleFileHash {
   [CmdletBinding()]
+  [OutputType([Bool])]
   param([Parameter(ValueFromPipeline)]$Cipherbundle)
   process {
     $Salt = $Cipherbundle.Salt
