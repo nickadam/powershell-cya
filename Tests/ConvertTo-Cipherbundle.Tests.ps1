@@ -1,6 +1,6 @@
 BeforeAll {
   $ScriptName = Split-Path $PSCommandPath -Leaf
-  $PrivateDirectory = Join-Path (Split-Path $PSCommandPath | Split-Path) "Private"
+  $PrivateDirectory = Join-Path (Split-Path $PSCommandPath | Split-Path) (Join-Path "Cya" "Private")
 
   # import all private scripts
   $Items = Get-ChildItem -Path (Join-Path $PrivateDirectory "*.ps1")

@@ -1,6 +1,6 @@
 BeforeAll {
   $ScriptName = Split-Path $PSCommandPath -Leaf
-  $PrivateDirectory = Join-Path (Split-Path $PSCommandPath | Split-Path) "Private"
+  $PrivateDirectory = Join-Path (Split-Path $PSCommandPath | Split-Path) (Join-Path "Cya" "Private")
   . (Join-Path $PrivateDirectory $ScriptName.Replace('.Tests.ps1','.ps1'))
 }
 
