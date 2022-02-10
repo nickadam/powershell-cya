@@ -3,7 +3,9 @@ function Remove-CyaPassword {
     [Parameter(Mandatory=$true)]
     $Name
   )
-  $CyaPassword = Get-CyaPassword -Name $Name -ErrorAction Stop
+
+  Get-CyaPassword -Name $Name -ErrorAction Stop | Out-Null
+
   # Check if any configs still use the password
   $StillInUse = @()
   $CyaConfigPath = Get-CyaConfigPath

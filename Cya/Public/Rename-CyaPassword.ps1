@@ -6,7 +6,9 @@ function Rename-CyaPassword {
     [Parameter(Mandatory=$true)]
     $NewName
   )
-  $CyaPassword = Get-CyaPassword -Name $Name -ErrorAction Stop
+
+  Get-CyaPassword -Name $Name -ErrorAction Stop | Out-Null
+
   $CyaPasswordPath = Get-CyaPasswordPath
   $OldPath = Join-Path -Path $CyaPasswordPath -ChildPath $Name
   $NewPath = Join-Path -Path $CyaPasswordPath -ChildPath $NewName

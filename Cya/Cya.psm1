@@ -6,7 +6,6 @@ $Public = Get-ChildItem -Path (Join-Path $PSScriptRoot "Public" "*.ps1")
   try {
     . $_.FullName
   } catch {
-    $FullName = $_.FullName
     Write-Error -Message "Failed to import $_"
   }
 }

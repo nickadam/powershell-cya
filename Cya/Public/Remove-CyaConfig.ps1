@@ -3,7 +3,8 @@ function Remove-CyaConfig {
     [Parameter(Mandatory=$true)]
     $Name
   )
-  $Config = Get-CyaConfig -Name $Name -ErrorAction Stop
+
+  Get-CyaConfig -Name $Name -ErrorAction Stop | Out-Null
 
   $CyaConfigPath = Get-CyaConfigPath
   $ConfigPath = Join-Path -Path $CyaConfigPath -ChildPath $Name

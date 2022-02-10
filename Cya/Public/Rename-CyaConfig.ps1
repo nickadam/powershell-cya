@@ -6,7 +6,9 @@ function Rename-CyaConfig {
     [Parameter(Mandatory=$true)]
     $NewName
   )
-  $Config = Get-CyaConfig -Name $Name
+
+  Get-CyaConfig -Name $Name -ErrorAction Stop | Out-Null
+
   $CyaConfigPath = Get-CyaConfigPath
   $OldPath = Join-Path -Path $CyaConfigPath -ChildPath $Name
   $NewPath = Join-Path -Path $CyaConfigPath -ChildPath $NewName
