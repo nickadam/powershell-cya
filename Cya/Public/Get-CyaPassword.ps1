@@ -1,7 +1,54 @@
 function Get-CyaPassword {
+  <#
+  .SYNOPSIS
+  Lists encrypted CyaPasswords (decryption keys) as FileInfo
+
+  .DESCRIPTION
+  Accepts a Name and show the corresponding FileInfo for that Name or throw an
+  error. If no Name is supplied it will list all CyaPasswords.
+
+  .PARAMETER Name
+  [String] The name of the CyaPassword.
+
+  .OUTPUTS
+  [Object[]] The FileInfo objects
+
+  .NOTES
+    Author: Nick Vissari
+
+  .EXAMPLE
+  Get-CyaPassword
+
+      Directory: C:\Users\nickadam\.cya\passwords
+
+  Mode                 LastWriteTime         Length Name
+  ----                 -------------         ------ ----
+  -a---           2/10/2022 10:17 AM            292 Default
+  -a---           2/10/2022 10:48 AM            292 Work
+
+  .EXAMPLE
+  Get-CyaPassword Default
+
+      Directory: C:\Users\nickadam\.cya\passwords
+
+  Mode                 LastWriteTime         Length Name
+  ----                 -------------         ------ ----
+  -a---           2/10/2022 10:17 AM            292 Default
+
+  .EXAMPLE
+  "Work" | Get-CyaPassword
+
+      Directory: C:\Users\nickadam\.cya\passwords
+
+  Mode                 LastWriteTime         Length Name
+  ----                 -------------         ------ ----
+  -a---           2/10/2022 10:48 AM            292 Work
+  #>
+
   [CmdletBinding()]
   param(
-    [Parameter(ValueFromPipeline)][String]$Name
+    [Parameter(ValueFromPipeline)]
+    [String]$Name
   )
 
   process {
