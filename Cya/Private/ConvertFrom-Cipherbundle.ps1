@@ -1,5 +1,5 @@
 function ConvertFrom-Cipherbundle {
-  [CmdletBinding()]
+  [CmdletBinding(SupportsShouldProcess)]
   param([Parameter(ValueFromPipeline)]$Cipherbundle, $Key)
   process {
     # get decrypted bytes from wherever
@@ -17,7 +17,9 @@ function ConvertFrom-Cipherbundle {
 
     if($Cipherbundle.Type -eq "EnvVar"){
       $Value = ConvertFrom-ByteArray -ToString -ByteArray $Bytes
-      [System.Environment]::SetEnvironmentVariable($Cipherbundle.Name, $Value)
+      if($PSCmdlet.ShouldProcess($Cipherbundle.Name, 'SetEnvironmentVariable')){
+        [System.Environment]::SetEnvironmentVariable($Cipherbundle.Name, $Value)
+      }
     }
 
     if($Cipherbundle.Type -eq "File"){

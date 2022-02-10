@@ -1,4 +1,5 @@
 function New-CyaPassword {
+  [CmdletBinding(SupportsShouldProcess)]
   param($Name="Default", [SecureString]$Password)
 
   $PasswordPath = Join-Path -Path (Get-CyaPasswordPath) -ChildPath $Name

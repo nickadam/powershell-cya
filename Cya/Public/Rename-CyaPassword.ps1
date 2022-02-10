@@ -1,4 +1,5 @@
 function Rename-CyaPassword {
+  [CmdletBinding(SupportsShouldProcess)]
   param(
     [Parameter(Mandatory=$true)]
     $Name,

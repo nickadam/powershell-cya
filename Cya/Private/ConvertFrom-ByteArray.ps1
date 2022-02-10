@@ -1,5 +1,5 @@
 function ConvertFrom-ByteArray {
-  [CmdletBinding()]
+  [CmdletBinding(SupportsShouldProcess)]
   param(
     [Parameter(Position=0, Mandatory=$true, ValueFromPipeline)] [Object]$ByteArray,
     [Parameter(Position=1)] [String]$Destination,
@@ -19,8 +19,10 @@ function ConvertFrom-ByteArray {
       if(-not (Split-Path $Destination -IsAbsolute)){
         $Destination = Join-Path $PWD $Destination
       }
-      [System.IO.File]::WriteAllBytes($Destination, $Bytes)
-      Get-Item $Destination
+      if($PSCmdlet.ShouldProcess($Destination, 'WriteAllBytes')){
+        [System.IO.File]::WriteAllBytes($Destination, $Bytes)
+        Get-Item $Destination
+      }
     }
   }
 }

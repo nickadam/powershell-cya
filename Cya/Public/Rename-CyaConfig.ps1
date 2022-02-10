@@ -1,4 +1,5 @@
 function Rename-CyaConfig {
+  [CmdletBinding(SupportsShouldProcess)]
   param(
     [Parameter(Mandatory=$true)]
     $Name,

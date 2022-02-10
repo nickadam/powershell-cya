@@ -1,5 +1,5 @@
 function ConvertTo-Cipherbundle {
-  [CmdletBinding()]
+  [CmdletBinding(SupportsShouldProcess)]
   param(
     [Parameter(Position=0, Mandatory=$true, ValueFromPipeline)][Object]$Item,
     [Parameter(Position=1, Mandatory=$true)][String]$Key,
@@ -27,7 +27,9 @@ function ConvertTo-Cipherbundle {
         }
 
         # write to file
-        [System.IO.File]::WriteAllBytes($BinPath, $EncryptedBin.Ciphertext)
+        if($PSCmdlet.ShouldProcess($BinPath,'WriteAllBytes')){
+          [System.IO.File]::WriteAllBytes($BinPath, $EncryptedBin.Ciphertext)
+        }
 
         [PSCustomObject]@{
           "Type" = "File"
@@ -61,7 +63,9 @@ function ConvertTo-Cipherbundle {
         }
 
         # write to file
-        [System.IO.File]::WriteAllBytes($BinPath, $EncryptedBin.Ciphertext)
+        if($PSCmdlet.ShouldProcess($BinPath,'WriteAllBytes')){
+          [System.IO.File]::WriteAllBytes($BinPath, $EncryptedBin.Ciphertext)
+        }
 
         [PSCustomObject]@{
           "Type" = "EnvVar"

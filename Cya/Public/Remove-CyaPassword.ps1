@@ -1,4 +1,5 @@
 function Remove-CyaPassword {
+  [CmdletBinding(SupportsShouldProcess)]
   param(
     [Parameter(Mandatory=$true)]
     $Name

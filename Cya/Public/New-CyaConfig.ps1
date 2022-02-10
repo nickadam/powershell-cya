@@ -1,5 +1,5 @@
 function New-CyaConfig {
-  [CmdletBinding()]
+  [CmdletBinding(SupportsShouldProcess)]
   param(
     [Parameter(Mandatory=$true)]
     [String]$Name,
@@ -268,6 +268,8 @@ function New-CyaConfig {
 
     # write config file
     $CyaConfig | ConvertTo-Json | Out-File -Encoding Default $ConfigPath
-    Get-CyaConfig -Name $Name -Status
+    if($PSCmdlet.ShouldProcess("Get-CyaConfig $Name", "", "")){
+      Get-CyaConfig -Name $Name -Status
+    }
   }
 }
