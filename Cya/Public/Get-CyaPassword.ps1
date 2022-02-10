@@ -1,14 +1,14 @@
 function Get-CyaPassword {
   <#
   .SYNOPSIS
-  Lists encrypted CyaPasswords (decryption keys) as FileInfo
+  List encrypted CyaPasswords (decryption keys) as FileInfo
 
   .DESCRIPTION
-  Accepts a Name and show the corresponding FileInfo for that Name or throw an
+  Accepts a Name and shows the corresponding FileInfo for that Name or throw an
   error. If no Name is supplied it will list all CyaPasswords.
 
   .PARAMETER Name
-  [String] The name of the CyaPassword.
+  [String] The name of the CyaPassword
 
   .OUTPUTS
   [Object[]] The FileInfo objects
