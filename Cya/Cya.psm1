@@ -26,7 +26,7 @@ $OnRemoveScript = {
 if(-not $Env:CYA_DISABLE_UNPROTECTED_MESSAGE){
   $Unprotected = Get-CyaConfig -Unprotected
   if($Unprotected){
-    $Unprotected | Format-Table | Out-String | ForEach-Object {Write-Host $_}
+    $Unprotected | Format-Table | Out-String | ForEach-Object { Write-Warning $_ }
     Write-Warning "The items above are Unprotected"
   }
 }
