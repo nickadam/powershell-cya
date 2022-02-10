@@ -84,7 +84,9 @@ function Unprotect-CyaConfig {
 
           # make directory
           $Directory = Split-Path $FilePath
-          mkdir -p $Directory | Out-Null
+          if(-not (Test-Path $Directory)){
+            mkdir -p $Directory | Out-Null
+          }
 
           # write file
           $Cipherbundle | ConvertFrom-Cipherbundle -Key $Keys[$Config.CyaPassword] | Out-Null
