@@ -62,7 +62,7 @@ function New-CyaPassword {
 
     # make missing directories
     if(-not (Test-Path (Get-CyaPasswordPath))){
-      mkdir -p (Get-CyaPasswordPath)
+      mkdir -p (Get-CyaPasswordPath) | Out-Null
     }
 
     $Key = Get-SecureStringText $Password

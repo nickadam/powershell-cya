@@ -47,6 +47,7 @@ Describe "Get-Key" {
   }
 
   AfterAll {
+    Remove-Item $Env:CYAPATH -Force -Recurse
     $Env:CYAPATH = $OriginalCyaPath
   }
 }
