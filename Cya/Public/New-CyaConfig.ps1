@@ -296,12 +296,9 @@ function New-CyaConfig {
 
     # Show option for type
     if(-not $Type){
-      $Options = [System.Management.Automation.Host.ChoiceDescription[]] @("&EnvVar", "&File")
-      $Option = $host.UI.PromptForChoice("Config type", "", $Options, 0)
-      Switch($Option){
-        0 { $Type = "EnvVar"}
-        1 { $Type = "File"}
-      }
+      $Caption = "Config type"
+      $Choices = "EnvVar", "File"
+      $Type = Invoke-ChoicePrompt -Caption $Caption -Choices $Choices
     }
 
     # Create Environment Variable config
@@ -402,12 +399,14 @@ function New-CyaConfig {
     if($Type -eq "File"){
       # set protect on exit
       if($ProtectOnExit -eq -1){
-        $Options = [System.Management.Automation.Host.ChoiceDescription[]] @("&No", "&Yes")
+        $Caption = "Protect on exit"
         $Message = "Would you like to automatically run Protect-CyaConfig (deletes unencrypted config files) on this config when unloading the Cya module or exiting powershell?"
-        $Option = $host.UI.PromptForChoice("Protect on exit", $Message, $Options, 1)
-        Switch($Option){
-          0 { $ProtectOnExit = 0}
-          1 { $ProtectOnExit = 1}
+        $Choices = "Yes", "No"
+        $Default = 1
+        $Response = Invoke-ChoicePrompt -Caption $Caption -Message $Message -Choices $Choices -Default $Default
+        $ProtectOnExit = 0
+        if($Response -eq "Yes"){
+          $ProtectOnExit = 1
         }
       }
 
