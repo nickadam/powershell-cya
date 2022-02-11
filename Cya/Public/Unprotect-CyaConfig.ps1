@@ -62,8 +62,7 @@ function Unprotect-CyaConfig {
     $Keys = @{}
     ForEach($CyaPassword in $CyaPasswords){
       if(-not $Password){
-        Write-Host -NoNewline "Enter password for CyaPassword `"$CyaPassword`": "
-        $Password = Read-Host -AsSecureString
+        $Password = Read-Host -Prompt "Enter password for CyaPassword `"$CyaPassword`"" -AsSecureString
       }
       $Key = Get-Key -CyaPassword $CyaPassword -Password $Password -ErrorAction Stop
       $Keys[$CyaPassword] = $Key
