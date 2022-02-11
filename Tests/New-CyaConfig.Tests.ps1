@@ -20,6 +20,8 @@ BeforeAll {
   Remove-Item $TmpFile
   mkdir $TmpFile
   $Env:CYAPATH = $TmpFile
+  $CYAPATH = $Env:CYAPATH
+  $ConfigsPath = Join-Path $CYAPATH "configs"
 
   $WarningPreference='SilentlyContinue'
 }
@@ -43,8 +45,11 @@ Describe "New-CyaConfig" {
       $Expected = '[{"Name":"test","Type":"EnvVar","CyaPassword":"Default","ProtectOnExit":true,"Item":"MYVAR","Status":"Protected"},{"Name":"test","Type":"EnvVar","CyaPassword":"Default","ProtectOnExit":true,"Item":"MYOTHERVAR","Status":"Protected"}]'
       $Status | ConvertTo-Json -Compress | Should -Be $Expected
     }
+    It "Should put create a CyaConfig file" {
+      (Get-Content (Join-Path $ConfigsPath "test") | ConvertFrom-Json).Type | Should -Be "EnvVar"
+    }
     AfterAll {
-      Remove-Item $Env:CYAPATH -Force -Recurse
+      Remove-Item $CYAPATH -Force -Recurse
     }
   }
 
@@ -66,16 +71,19 @@ Describe "New-CyaConfig" {
       $Expected = '[{"Name":"test","Type":"EnvVar","CyaPassword":"Default","ProtectOnExit":true,"Item":"MYVAR","Status":"Unprotected"},{"Name":"test","Type":"EnvVar","CyaPassword":"Default","ProtectOnExit":true,"Item":"MYOTHERVAR","Status":"Unprotected"}]'
       $Status | ConvertTo-Json -Compress | Should -Be $Expected
     }
+    It "Should put create a CyaConfig file" {
+      (Get-Content (Join-Path $ConfigsPath "test") | ConvertFrom-Json).Type | Should -Be "EnvVar"
+    }
     AfterAll {
       $Env:MYVAR = ""
       $Env:MYOTHERVAR = ""
-      Remove-Item $Env:CYAPATH -Force -Recurse
+      Remove-Item $CYAPATH -Force -Recurse
     }
   }
 
   AfterAll {
-    if(Get-Item $Env:CYAPATH -EA SilentlyContinue){
-      Remove-Item $Env:CYAPATH -Force -Recurse
+    if(Get-Item $CYAPATH -EA SilentlyContinue){
+      Remove-Item $CYAPATH -Force -Recurse
     }
     $Env:CYAPATH = $OriginalCyaPath
   }
