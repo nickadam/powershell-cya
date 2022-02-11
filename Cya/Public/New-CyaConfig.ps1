@@ -22,7 +22,7 @@ function New-CyaConfig {
   [String] Value of the environment variable
 
   .PARAMETER EnvVarCollection
-  [Object] A hashtable or PSCustomObjects with Name and Value
+  [Object] A hashtable or any object with Name and Value
 
   .PARAMETER File
   [Object] A file or list of files
@@ -37,18 +37,155 @@ function New-CyaConfig {
   [SecureString] Your password to decrypt the CyaPassword
 
   .OUTPUTS
-  [Object] A CyaConfig summary
+  [Object] CyaConfig item status
 
   .NOTES
     Author: Nick Vissari
 
   .EXAMPLE
+  New-CyaConfig
+
+  cmdlet New-CyaConfig at command pipeline position 1
+  Supply values for the following parameters:
+  Name: sample
+  WARNING: CyaPassword "Default" not found, creating now with New-CyaPassword.
+  Enter new password: ********
+  Confirm new password: ********
+
+  Config type
+  [E] EnvVar  [F] File  [?] Help (default is "E"):
+  Variable 1 name (Enter when done): MYVAR
+  MYVAR value: *****
+  Variable 2 name (Enter when done): MYOTHERVAR
+  MYOTHERVAR value: *****
+  Variable 3 name (Enter when done):
+
+  Name          : sample
+  Type          : EnvVar
+  CyaPassword   : Default
+  ProtectOnExit : True
+  Item          : MYVAR
+  Status        : Protected
+
+  Name          : sample
+  Type          : EnvVar
+  CyaPassword   : Default
+  ProtectOnExit : True
+  Item          : MYOTHERVAR
+  Status        : Protected
 
 
   Description
   -----------
-  Prompts for missing params
+  With no parameters specified, the user is prompted for every option. This
+  includes setting the default password, which results in a new CyaPassword
+  as well as CyaConfig.
 
+  .EXAMPLE
+  New-CyaConfig -Name sample -EnvVarName MYVAR -EnvVarValue 12345 -CyaPassword Default
+  Enter password for CyaPassword "Default": ********
+
+  Name          : sample
+  Type          : EnvVar
+  CyaPassword   : Default
+  ProtectOnExit : True
+  Item          : MYVAR
+  Status        : Protected
+
+
+  Description
+  -----------
+  A single environment variable name and value can be specified. Keep in my the
+  value will be in your command history.
+
+  .EXAMPLE
+  Get-ChildItem | New-CyaConfig -Name sample -ProtectOnExit $true
+  Enter password for CyaPassword "Default": ********
+
+  Name          : sample
+  Type          : File
+  CyaPassword   : Default
+  ProtectOnExit : True
+  Item          : C:\Users\nickadam\sample\file1.conf
+  Status        : Unprotected
+
+  Name          : sample
+  Type          : File
+  CyaPassword   : Default
+  ProtectOnExit : True
+  Item          : C:\Users\nickadam\sample\file2.json
+  Status        : Unprotected
+
+
+  Description
+  -----------
+  A CyaConfig can be created from files in the pipeline. ProtectOnExit, if
+  enabled, will attempt to delete unprotected files from the system when the
+  shell exists cleanly. File hashes are checked to ensure the file hasn't been
+  modified since it was protected.
+
+  .EXAMPLE
+  New-CyaConfig -Name sample -File file1.conf -ProtectOnExit $true
+  Enter password for CyaPassword "Default": ********
+
+  Name          : sample
+  Type          : File
+  CyaPassword   : Default
+  ProtectOnExit : True
+  Item          : C:\Users\nickadam\sample\file1.conf
+  Status        : Unprotected
+
+
+  Description
+  -----------
+  A file or list of files can be provided.
+
+  .EXAMPLE
+  "MYVAR", "MYOTHERVAR" | New-CyaConfig -Name sample
+  Enter password for CyaPassword "Default": ********
+
+  Name          : sample
+  Type          : EnvVar
+  CyaPassword   : Default
+  ProtectOnExit : True
+  Item          : MYVAR
+  Status        : Unprotected
+
+  Name          : sample
+  Type          : EnvVar
+  CyaPassword   : Default
+  ProtectOnExit : True
+  Item          : MYOTHERVAR
+  Status        : Unprotected
+
+
+  Description
+  -----------
+  A CyaConfig can be created from set environment variables.
+
+  .EXAMPLE
+  New-CyaConfig -EnvVarCollection (Get-ChildItem Env: | where{$_.Name -like "MY*"}) -Name sample
+  Enter password for CyaPassword "Default": ********
+
+  Name          : sample
+  Type          : EnvVar
+  CyaPassword   : Default
+  ProtectOnExit : True
+  Item          : MYOTHERVAR
+  Status        : Unprotected
+
+  Name          : sample
+  Type          : EnvVar
+  CyaPassword   : Default
+  ProtectOnExit : True
+  Item          : MYVAR
+  Status        : Unprotected
+
+
+  Description
+  -----------
+  A collection of environment variables can be specified as a hashtable or any
+  iterable list of objects with Name and Value.
 
   #>
 
@@ -74,6 +211,7 @@ function New-CyaConfig {
     ParameterSetName="FileOrFiles")]
     [Object]$File,
 
+    [Parameter(ParameterSetName="SomethingFromPipeline")]
     [Parameter(ParameterSetName="FileOrFiles")]
     [ValidateSet(0, 1)]
     [Int]$ProtectOnExit = -1,
