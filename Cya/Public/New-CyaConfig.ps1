@@ -4,42 +4,51 @@ function New-CyaConfig {
   Creates CyaConfigs.
 
   .DESCRIPTION
-  A CyaConfig is an encrypted collection of files or environment variables. 
+  A CyaConfig is an encrypted collection of small files or environment variables.
+  Items in the CyaConfig can be protected (encrypted to a new file and source file
+  deleted or removed from the shell) or unprotected (decrypted and set on the
+  shell or written to the file path defined).
 
   .PARAMETER Name
-  [String] The name of the CyaPasswords
+  [String] The name of the CyaConfig
+
+  .PARAMETER Type
+  [String] File or EnvVar (Environment Variable)
+
+  .PARAMETER EnvVarName
+  [String] Name of the environment variable
+
+  .PARAMETER EnvVarValue
+  [String] Value of the environment variable
+
+  .PARAMETER EnvVarCollection
+  [Object] A hashtable or PSCustomObjects with Name and Value
+
+  .PARAMETER File
+  [Object] A file or list of files
+
+  .PARAMETER ProtectOnExit
+  [Int] Set to 1 ot $True if you want to delete the unprotected files on exit
+
+  .PARAMETER CyaPassword
+  [String] The CyaPassword to encrypt and decrypt the CyaConfig, defaults to "Default"
 
   .PARAMETER Password
   [SecureString] Your password to decrypt the CyaPassword
 
   .OUTPUTS
-  $Null
+  [Object] A CyaConfig summary
 
   .NOTES
     Author: Nick Vissari
 
   .EXAMPLE
-  New-CyaPassword
-
-  cmdlet New-CyaPassword at command pipeline position 1
-  Supply values for the following parameters:
-  Name: sample
-  Enter new password: *************
-  Confirm new password: *************
 
 
   Description
   -----------
   Prompts for missing params
 
-  .EXAMPLE
-  New-CyaPassword -Name sample -Password (ConvertTo-SecureString -AsPlainText -Force "dont do this")
-
-
-  Description
-  -----------
-  Inscure way to set a password using plain text string. Don't do this. The
-  password will end up in your command history.
 
   #>
 
@@ -141,7 +150,7 @@ function New-CyaConfig {
     # Show option for type
     if(-not $Type){
       $Options = [System.Management.Automation.Host.ChoiceDescription[]] @("&EnvVar", "&File")
-      $Option = $host.UI.PromptForChoice("Config type:", "", $Options, 0)
+      $Option = $host.UI.PromptForChoice("Config type", "", $Options, 0)
       Switch($Option){
         0 { $Type = "EnvVar"}
         1 { $Type = "File"}
@@ -178,7 +187,7 @@ function New-CyaConfig {
         $n = 0
         while($Collecting){
           $n++
-          $EnvVarName = Read-Host -Prompt "Variable $n name (Enter when done): "
+          $EnvVarName = Read-Host -Prompt "Variable $n name (Enter when done)"
 
           # done collecting
           if(-not $EnvVarName){
@@ -216,7 +225,7 @@ function New-CyaConfig {
       }
 
       if(-not $Password){
-        $Password = Read-Host -Prompt "Enter password for CyaPassword `"$CyaPassword`": " -AsSecureString
+        $Password = Read-Host -Prompt "Enter password for CyaPassword `"$CyaPassword`"" -AsSecureString
       }
       $Key = Get-Key -CyaPassword $CyaPassword -Password $Password
 
@@ -256,7 +265,7 @@ function New-CyaConfig {
       if($ProtectOnExit -eq -1){
         $Options = [System.Management.Automation.Host.ChoiceDescription[]] @("&No", "&Yes")
         $Message = "Would you like to automatically run Protect-CyaConfig (deletes unencrypted config files) on this config when unloading the Cya module or exiting powershell?"
-        $Option = $host.UI.PromptForChoice("Protect on exit:", $Message, $Options, 1)
+        $Option = $host.UI.PromptForChoice("Protect on exit", $Message, $Options, 1)
         Switch($Option){
           0 { $ProtectOnExit = 0}
           1 { $ProtectOnExit = 1}
@@ -270,7 +279,7 @@ function New-CyaConfig {
         $n = 0
         while($Collecting){
           $n++
-          $FilePath = Read-Host -Prompt "File $n path (Enter when done): "
+          $FilePath = Read-Host -Prompt "File $n path (Enter when done)"
           if($FilePath){
             if(-not (Test-Path $FilePath -PathType Leaf)){
               Throw "File $FilePath not found"
@@ -298,7 +307,7 @@ function New-CyaConfig {
 
       # get the key
       if(-not $Password){
-        $Password = Read-Host -Prompt "Enter password for CyaPassword `"$CyaPassword`": " -AsSecureString
+        $Password = Read-Host -Prompt "Enter password for CyaPassword `"$CyaPassword`"" -AsSecureString
       }
       $Key = Get-Key -CyaPassword $CyaPassword -Password $Password
 

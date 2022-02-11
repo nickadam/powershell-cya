@@ -10,7 +10,7 @@ function New-CyaPassword {
   different CyaConfigs.
 
   .PARAMETER Name
-  [String] The name of the CyaPasswords
+  [String] The name of the CyaPassword
 
   .PARAMETER Password
   [SecureString] Your password to decrypt the CyaPassword
