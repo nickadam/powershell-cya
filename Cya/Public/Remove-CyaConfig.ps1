@@ -19,6 +19,8 @@ function Remove-CyaConfig {
       $ConfigName = $InputObject.Name
     }
 
+    Get-CyaConfig -Name $ConfigName | Out-Null # will throw
+
     $CyaConfigPath = Get-CyaConfigPath
     $ConfigPath = Join-Path -Path $CyaConfigPath -ChildPath $ConfigName
 
