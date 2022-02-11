@@ -83,6 +83,7 @@ function New-CyaConfig {
     [SecureString]$Password,
 
     [Parameter(ValueFromPipeline,
+    DontShow,
     ParameterSetName="SomethingFromPipeline")]
     [Object]$InputObject,
 
@@ -303,6 +304,9 @@ function New-CyaConfig {
         if(-not (Test-Path $FilePath -PathType Leaf)){
           Throw "File $FilePath not found"
         }
+        if((Get-Item $FilePath).Length -eq 0){
+          Throw "File $FilePath is empty"
+        }
       }
 
       # get the key
@@ -311,7 +315,7 @@ function New-CyaConfig {
       }
       $Key = Get-Key -CyaPassword $CyaPassword -Password $Password
 
-      # # encrypt all the files
+      # encrypt all the files
       $FileCollection = $File | Get-Item | ConvertTo-Cipherbundle -Key $Key -Name $Name
 
       if($FileCollection.length -eq 1){
