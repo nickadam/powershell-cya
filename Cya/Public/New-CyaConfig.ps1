@@ -148,6 +148,14 @@ function New-CyaConfig {
       $Type = "File"
     }
 
+    $CyaConfigPath = Get-CyaConfigPath
+    $ConfigPath = Join-Path -Path $CyaConfigPath -ChildPath $Name
+
+    # Check if config already exists
+    if(Test-Path $ConfigPath){
+      Throw "Config `"$Name`" already exists"
+    }
+
     # Show option for type
     if(-not $Type){
       $Options = [System.Management.Automation.Host.ChoiceDescription[]] @("&EnvVar", "&File")
@@ -156,14 +164,6 @@ function New-CyaConfig {
         0 { $Type = "EnvVar"}
         1 { $Type = "File"}
       }
-    }
-
-    $CyaConfigPath = Get-CyaConfigPath
-    $ConfigPath = Join-Path -Path $CyaConfigPath -ChildPath $Name
-
-    # Check if config already exists
-    if(Test-Path $ConfigPath){
-      Throw "Config `"$Name`" already exists"
     }
 
     # Create Environment Variable config
@@ -196,12 +196,12 @@ function New-CyaConfig {
             Continue
           }
 
-          $Message = "$EnvVarName value : "
+          $Message = "$EnvVarName value"
 
           # check if environment varialbe is currently set
           $SetValue = Get-EnvVarValueByName -Name $EnvVarName
           if($SetValue){
-            $Message = "$EnvVarName value [$SetValue]: "
+            $Message = "$EnvVarName value [$SetValue]"
           }
           $EnvVarSecureString = Read-Host -AsSecureString -Prompt $Message
           $EnvVarValue = Get-SecureStringText -SecureString $EnvVarSecureString
