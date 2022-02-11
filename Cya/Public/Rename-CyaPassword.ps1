@@ -1,20 +1,20 @@
 function Rename-CyaPassword {
   [CmdletBinding(SupportsShouldProcess)]
   param(
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory)]
     $Name,
 
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory)]
     $NewName
   )
 
-  Get-CyaPassword -Name $Name -ErrorAction Stop | Out-Null
+  Get-CyaPassword -Name $Name | Out-Null # will throw
 
   $CyaPasswordPath = Get-CyaPasswordPath
   $OldPath = Join-Path -Path $CyaPasswordPath -ChildPath $Name
   $NewPath = Join-Path -Path $CyaPasswordPath -ChildPath $NewName
   if(Test-Path $NewPath){
-    Write-Error "CyaPassword name `"$NewName`" conflicts with existing CyaPassword" -ErrorAction Stop
+    Throw "CyaPassword name `"$NewName`" conflicts with existing CyaPassword"
   }
 
   # update all relevant CyaConfigs CyaPassword name

@@ -1,20 +1,20 @@
 function Rename-CyaConfig {
   [CmdletBinding(SupportsShouldProcess)]
   param(
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory)]
     $Name,
 
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory)]
     $NewName
   )
 
-  Get-CyaConfig -Name $Name -ErrorAction Stop | Out-Null
+  Get-CyaConfig -Name $Name | Out-Null # will throw
 
   $CyaConfigPath = Get-CyaConfigPath
   $OldPath = Join-Path -Path $CyaConfigPath -ChildPath $Name
   $NewPath = Join-Path -Path $CyaConfigPath -ChildPath $NewName
   if(Test-Path $NewPath){
-    Write-Error "CyaConfig name `"$NewName`" conflicts with existing CyaConfig" -ErrorAction Stop
+    Throw "CyaConfig name `"$NewName`" conflicts with existing CyaConfig"
   }
   Move-Item $OldPath $NewPath
 }

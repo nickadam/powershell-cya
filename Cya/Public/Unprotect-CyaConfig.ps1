@@ -50,7 +50,7 @@ function Unprotect-CyaConfig {
               $Message = "Conflicting file `"$FilePath`" exists. " +
                 "The file may have been overwritten or modified since it was " +
                 "unprotected. Delete or rename the file to resolve the conflict."
-              Write-Error $Message -ErrorAction Stop
+              Throw $Message
             }
           }
         }

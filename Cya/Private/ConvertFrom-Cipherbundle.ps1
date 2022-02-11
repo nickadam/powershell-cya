@@ -25,7 +25,7 @@ function ConvertFrom-Cipherbundle {
     if($Cipherbundle.Type -eq "File"){
       $FilePath = $Cipherbundle.FilePath
       if(Test-Path $FilePath -PathType Leaf){
-        Write-Error "File $FilePath already exists" -ErrorAction Stop
+        Throw "File $FilePath already exists"
       }else{
         ConvertFrom-ByteArray -ByteArray $Bytes -Destination $FilePath
       }
