@@ -51,9 +51,7 @@ function ConvertTo-Cipherbundle {
           "Ciphertext" = [System.Convert]::ToBase64String($EncryptedBin.Ciphertext)
         }
       }
-    }
-
-    if($Item.GetType().Name -eq "PSCustomObject"){
+    }else{ # must be environment variable
       $Hash = Get-Sha256Hash -String $Item.Value -Salt $Salt
       $EncryptedBin = ConvertTo-ByteArray -String $Item.Value | Get-EncryptedBin -Password $Key
       if($EncryptedBin.Ciphertext.length -gt 1024){
