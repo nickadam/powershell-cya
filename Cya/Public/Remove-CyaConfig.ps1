@@ -1,28 +1,18 @@
 function Remove-CyaConfig {
-  [CmdletBinding(SupportsShouldProcess,
-  DefaultParameterSetName = "FromPipeline")]
+  [CmdletBinding(SupportsShouldProcess)]
   param(
     [Parameter(Mandatory,
-    ParameterSetName="FromName")]
-    [String]$Name,
-
-    [Parameter(Mandatory,
     ValueFromPipeline,
-    DontShow,
-    ParameterSetName="FromPipeline")]
-    [Object]$InputObject
+    ValueFromPipelineByPropertyName)]
+    [String]$Name
   )
 
   process {
-    $ConfigName = $Name
-    if(-not $Name -and $InputObject){
-      $ConfigName = $InputObject.Name
-    }
 
-    Get-CyaConfig -Name $ConfigName | Out-Null # will throw
+    Get-CyaConfig -Name $Name | Out-Null # will throw
 
     $CyaConfigPath = Get-CyaConfigPath
-    $ConfigPath = Join-Path -Path $CyaConfigPath -ChildPath $ConfigName
+    $ConfigPath = Join-Path -Path $CyaConfigPath -ChildPath $Name
 
     # delete all bin files
     $CyaConfig = Get-Item $ConfigPath | Get-Content | ConvertFrom-Json
