@@ -34,6 +34,16 @@ Describe "Get-Key" {
     }
   }
 
+  Context "Bad Password param" {
+    BeforeAll {
+      New-CyaPassword -Password $Password -Name "BadPass"
+      $BadPassword = ConvertTo-SecureString -String "passwrd" -AsPlainText -Force
+    }
+    It "Should write a random string" {
+      { Get-Key -Password $BadPassword -CyaPassword "BadPass" } | Should -Throw
+    }
+  }
+
   Context "Password param CyaPassword param" {
     BeforeAll {
       New-CyaPassword -Password $Password -Name "MyPass1"

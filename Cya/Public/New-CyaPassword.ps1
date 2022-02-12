@@ -66,12 +66,9 @@ function New-CyaPassword {
     }
 
     $Key = Get-SecureStringText $Password
-    $EncryptedBin = Get-RandomString | ConvertTo-ByteArray | Get-EncryptedBin -Password $Key
-
-    # Convert Ciphertext to base64
-    $EncryptedBin.Ciphertext = [System.Convert]::ToBase64String($EncryptedBin.Ciphertext)
+    $Ciphertext = Get-RandomString | ConvertTo-EncryptedBin -Key $Key
 
     # write to file
-    $EncryptedBin | ConvertTo-Json | Out-File -Encoding Default $PasswordPath
+    $Ciphertext | Out-File -Encoding Default $PasswordPath
   }
 }

@@ -18,72 +18,33 @@ function ConvertTo-Cipherbundle {
 
     if($Item.GetType().Name -eq "FileInfo"){
       $Hash = Get-Sha256Hash -File $Item -Salt $Salt
-      $EncryptedBin = ConvertTo-ByteArray -File $Item | Get-EncryptedBin -Password $Key
-      if($EncryptedBin.Ciphertext.length -gt 1024){
 
+      if($PSCmdlet.ShouldProcess($BinPath,'WriteAllBytes')){
         # make directory
         if(-not (Test-Path $BinsPath)){
           mkdir -p $BinsPath | Out-Null
         }
 
         # write to file
-        if($PSCmdlet.ShouldProcess($BinPath,'WriteAllBytes')){
-          [System.IO.File]::WriteAllBytes($BinPath, $EncryptedBin.Ciphertext)
-        }
+        $Item | ConvertTo-EncryptedBin -Key $Key -FileOut $BinPath
+      }
 
-        [PSCustomObject]@{
-          "Type" = "File"
-          "FilePath" = $Item.FullName
-          "Salt" = $Salt
-          "Hash" = $Hash
-          "BinSalt" = $EncryptedBin.Salt
-          "Hmac" = $EncryptedBin.Hmac
-          "CiphertextFile" = $BinPath
-        }
-      }else{
-        [PSCustomObject]@{
-          "Type" = "File"
-          "FilePath" = $Item.FullName
-          "Salt" = $Salt
-          "Hash" = $Hash
-          "BinSalt" = $EncryptedBin.Salt
-          "Hmac" = $EncryptedBin.Hmac
-          "Ciphertext" = [System.Convert]::ToBase64String($EncryptedBin.Ciphertext)
-        }
+      [PSCustomObject]@{
+        "Type" = "File"
+        "FilePath" = $Item.FullName
+        "Salt" = $Salt
+        "Hash" = $Hash
+        "CiphertextFile" = $BinPath
       }
     }else{ # must be environment variable
       $Hash = Get-Sha256Hash -String $Item.Value -Salt $Salt
-      $EncryptedBin = ConvertTo-ByteArray -String $Item.Value | Get-EncryptedBin -Password $Key
-      if($EncryptedBin.Ciphertext.length -gt 1024){
-        # make directory
-        if(-not (Test-Path $BinsPath)){
-          mkdir -p $BinsPath | Out-Null
-        }
-
-        # write to file
-        if($PSCmdlet.ShouldProcess($BinPath,'WriteAllBytes')){
-          [System.IO.File]::WriteAllBytes($BinPath, $EncryptedBin.Ciphertext)
-        }
-
-        [PSCustomObject]@{
-          "Type" = "EnvVar"
-          "Name" = $Item.Name
-          "Salt" = $Salt
-          "Hash" = $Hash
-          "BinSalt" = $EncryptedBin.Salt
-          "Hmac" = $EncryptedBin.Hmac
-          "CiphertextFile" = $BinPath
-        }
-      }else{
-        [PSCustomObject]@{
-          "Type" = "EnvVar"
-          "Name" = $Item.Name
-          "Salt" = $Salt
-          "Hash" = $Hash
-          "BinSalt" = $EncryptedBin.Salt
-          "Hmac" = $EncryptedBin.Hmac
-          "Ciphertext" = [System.Convert]::ToBase64String($EncryptedBin.Ciphertext)
-        }
+      $Ciphertext = $Item.Value | ConvertTo-EncryptedBin -Key $Key
+      [PSCustomObject]@{
+        "Type" = "EnvVar"
+        "Name" = $Item.Name
+        "Salt" = $Salt
+        "Hash" = $Hash
+        "Ciphertext" = $Ciphertext
       }
     }
   }

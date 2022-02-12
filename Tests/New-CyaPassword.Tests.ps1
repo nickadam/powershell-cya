@@ -27,11 +27,10 @@ Describe "New-CyaPassword" {
     BeforeAll {
       New-CyaPassword -Password (ConvertTo-SecureString -String "password" -AsPlainText -Force)
       $CyaPasswordPath = Join-Path -Path (Get-CyaPasswordPath) -ChildPath "Default"
-      $EncryptedBin = Get-Content $CyaPasswordPath | ConvertFrom-Json
-      $result = $EncryptedBin.Ciphertext
+      $result = Get-Content $CyaPasswordPath
     }
     It "Should write the password to the CyaPasswordPath Default file" {
-      $result.length | Should -Be 108
+      $result.length | Should -Be 128
     }
   }
 
@@ -39,11 +38,10 @@ Describe "New-CyaPassword" {
     BeforeAll {
       New-CyaPassword -Password (ConvertTo-SecureString -String "password" -AsPlainText -Force) -Name "MyPass"
       $CyaPasswordPath = Join-Path -Path (Get-CyaPasswordPath) -ChildPath "MyPass"
-      $EncryptedBin = Get-Content $CyaPasswordPath | ConvertFrom-Json
-      $result = $EncryptedBin.Ciphertext
+      $result = Get-Content $CyaPasswordPath
     }
     It "Should write the password to the CyaPasswordPath Name file" {
-      $result.length | Should -Be 108
+      $result.length | Should -Be 128
     }
   }
 

@@ -30,39 +30,11 @@ Describe "ConvertTo-Cipherbundle" {
       $result = $Item | ConvertTo-Cipherbundle -Key "key" -Name "test"
     }
     It "Should an return object with Ciphertext" {
-      $result.Ciphertext.length | Should -Be 24
+      $result.Ciphertext.length | Should -Be 44
     }
   }
 
-  Context "Pipeline Item, Key param, and Name param with large string" {
-    BeforeAll {
-      $Item = [PSCustomObject]@{
-        "Key" = "var1"
-        "Value" = Get-RandomString -Length 1025
-      }
-      $result = $Item | ConvertTo-Cipherbundle -Key "key" -Name "test"
-    }
-    It "Should return an object with CiphertextFile" {
-      (Split-Path $result.CiphertextFile -Leaf) | Should -Be "test.0"
-    }
-    AfterAll {
-      Remove-Item $result.CiphertextFile
-    }
-  }
-
-  Context "Pipeline Item, Key param, and Name param with small file" {
-    BeforeAll {
-      $TmpFile = New-TemporaryFile
-      "test content" | Out-File -Encoding Default -NoNewline $TmpFile
-
-      $result = $TmpFile | ConvertTo-Cipherbundle -Key "key" -Name "test"
-    }
-    It "Should return an object with Ciphertext" {
-      $result.Ciphertext.length | Should -Be 24
-    }
-  }
-
-  Context "Pipeline Item, Key param, and Name param with large file" {
+  Context "Pipeline Item, Key param, and Name param with file" {
     BeforeAll {
       $TmpFile = New-TemporaryFile
       (Get-RandomString -Length 1025) | Out-File -Encoding Default -NoNewline $TmpFile
