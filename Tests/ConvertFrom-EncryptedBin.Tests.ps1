@@ -33,7 +33,7 @@ Describe "ConvertFrom-EncryptedBin" {
       $TmpFile1 = New-TemporaryFile
       $TmpFile2 = New-TemporaryFile
       $TmpFile3 = New-TemporaryFile
-      Get-Random -Count 100 | Out-File -Encoding Default $TmpFile1
+      $n=0; $d=while($n -lt 100){$n++; Get-Random}; $d | Out-File -Encoding Default $TmpFile1
       ConvertTo-EncryptedBin -FileIn $TmpFile1 -FileOut $TmpFile2 -Key "password"
       ConvertFrom-EncryptedBin -FileIn $TmpFile2 -FileOut $TmpFile3 -Key "password"
       $Hash1 = (Get-FileHash $TmpFile1).Hash
@@ -54,7 +54,7 @@ Describe "ConvertFrom-EncryptedBin" {
       $TmpFile1 = New-TemporaryFile
       $TmpFile2 = New-TemporaryFile
       $TmpFile3 = New-TemporaryFile
-      Get-Random -Count 100 | Out-File -Encoding Default $TmpFile1
+      $n=0; $d=while($n -lt 100){$n++; Get-Random}; $d | Out-File -Encoding Default $TmpFile1
       ConvertTo-EncryptedBin -FileIn $TmpFile1 -FileOut $TmpFile2 -Key "password"
       $TmpFile2 | ConvertFrom-EncryptedBin -FileOut $TmpFile3 -Key "password"
       $Hash1 = (Get-FileHash $TmpFile1).Hash

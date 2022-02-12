@@ -30,7 +30,7 @@ Describe "ConvertTo-EncryptedBin" {
     BeforeAll {
       $TmpFile1 = New-TemporaryFile
       $TmpFile2 = New-TemporaryFile
-      Get-Random -Count 100 | Out-File -Encoding Default $TmpFile1
+      $n=0; $d=while($n -lt 100){$n++; Get-Random}; $d  | Out-File -Encoding Default $TmpFile1
       ConvertTo-EncryptedBin -FileIn $TmpFile1 -FileOut $TmpFile2 -Key "password"
       $Size1 = (Get-Item $TmpFile1).Size
       $Size2 = (Get-Item $TmpFile2).Size
@@ -51,7 +51,7 @@ Describe "ConvertTo-EncryptedBin" {
     BeforeAll {
       $TmpFile1 = New-TemporaryFile
       $TmpFile2 = New-TemporaryFile
-      Get-Random -Count 100 | Out-File -Encoding Default $TmpFile1
+      $n=0; $d=while($n -lt 100){$n++; Get-Random}; $d  | Out-File -Encoding Default $TmpFile1
       $TmpFile1 | ConvertTo-EncryptedBin -FileOut $TmpFile2 -Key "password"
       $Size1 = (Get-Item $TmpFile1).Size
       $Size2 = (Get-Item $TmpFile2).Size
