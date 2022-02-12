@@ -39,6 +39,9 @@ function ConvertTo-EncryptedBin {
 
         $FileOutStream.Write($IV,0,$IV.Count)
 
+        $ApproxSize = (Get-Item $FileIn).Size
+        Write-Progress -Activity $FileIn -Status 'Encrypting' -PercentComplete 0
+        $n = 0
         do {
           try {
             $Byte = $FileInStream.ReadByte()
@@ -47,6 +50,12 @@ function ConvertTo-EncryptedBin {
           }
           if($Byte -ne -1){
             $CryptoStream.WriteByte($Byte)
+            $n++
+          }
+          if(($n % 102400) -eq 0){
+            $CurrentSize = (Get-Item $FileOut).Size
+            $PercentComplete = (1 - ($ApproxSize - $CurrentSize)/$ApproxSize) * 100
+            Write-Progress -Activity $FileIn -Status 'Encrypting' -PercentComplete $PercentComplete
           }
         } while ($Byte -ne -1)
 
