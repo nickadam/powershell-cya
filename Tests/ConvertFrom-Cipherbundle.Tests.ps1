@@ -39,44 +39,7 @@ Describe "ConvertFrom-Cipherbundle" {
     }
   }
 
-  Context "Pipeline Cipherbundle with large string EnvVar" {
-    BeforeAll {
-      $Env:testvar1 = ""
-      $RandomString = Get-RandomString -Length 1025
-      $Item = [PSCustomObject]@{
-        "Name" = "testvar1"
-        "Value" = $RandomString
-      }
-      $Cipherbundle = $Item | ConvertTo-Cipherbundle -Key "key" -Name "test"
-      $Cipherbundle | ConvertFrom-Cipherbundle -Key "key"
-    }
-    It "Should set testvar1" {
-      $Env:testvar1 | Should -Be $RandomString
-    }
-    AfterAll {
-      $Env:testvar1 = ""
-    }
-  }
-
-  Context "Pipeline Cipherbundle with small file" {
-    BeforeAll {
-      $TmpFile = New-TemporaryFile
-      "test content" | Out-File -Encoding Default -NoNewline $TmpFile
-
-      $Cipherbundle = $TmpFile | ConvertTo-Cipherbundle -Key "key" -Name "test"
-      Remove-Item $TmpFile
-      $Cipherbundle | ConvertFrom-Cipherbundle -Key "key" | Out-Null
-      $result = Get-Content $TmpFile
-    }
-    It "Should create the file" {
-      $result | Should -Be "test content"
-    }
-    AfterAll {
-      Remove-Item $TmpFile
-    }
-  }
-
-  Context "Pipeline Cipherbundle with large file" {
+  Context "Pipeline Cipherbundle with file" {
     BeforeAll {
       $TmpFile = New-TemporaryFile
       $RandomString = Get-RandomString -Length 1025
