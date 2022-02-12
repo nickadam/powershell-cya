@@ -39,7 +39,7 @@ function ConvertTo-EncryptedBin {
 
         $FileOutStream.Write($IV,0,$IV.Count)
 
-        $ApproxSize = (Get-Item $FileIn).Size
+        $ApproxSize = (Get-Item $FileIn).Length
         Write-Progress -Activity $FileIn -Status "Encrypting" -PercentComplete 0
         $n = 0
 
@@ -49,16 +49,18 @@ function ConvertTo-EncryptedBin {
             try {
               $Byte = $FileInStream.ReadByte()
             } catch {
-              Throw
+              Throw "Read failed"
             }
             if($Byte -ne -1){
               $CryptoStream.WriteByte($Byte)
               $n++
             }
             if(($n % 102400) -eq 0){
-              $CurrentSize = (Get-Item $FileOut).Size
-              $PercentComplete = [Math]::Round(((1 - ($ApproxSize - $CurrentSize)/$ApproxSize) * 100), 1)
-              Write-Progress -Activity $FileIn -Status "Encrypting $PercentComplete%" -PercentComplete $PercentComplete
+              $CurrentSize = (Get-Item $FileOut).Length
+              if($ApproxSize -gt 0){
+                $PercentComplete = [Math]::Round(((1 - ($ApproxSize - $CurrentSize)/$ApproxSize) * 100), 1)
+                Write-Progress -Activity $FileIn -Status "Encrypting $PercentComplete%" -PercentComplete $PercentComplete
+              }
             }
           } while ($Byte -ne -1)
 
@@ -67,6 +69,7 @@ function ConvertTo-EncryptedBin {
         } finally {
           if(-not $Completed){
             rm $FileOut
+            Throw "Encryption failed"
           }
         }
 
