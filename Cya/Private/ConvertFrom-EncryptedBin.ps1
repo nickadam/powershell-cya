@@ -55,7 +55,7 @@ function ConvertFrom-EncryptedBin {
     }
 
     if($PsCmdlet.ParameterSetName -eq "FromFile"){
-      if($PSCmdlet.ShouldProcess($FileOut, 'WriteByte')){
+      if($PSCmdlet.ShouldProcess($FileOut, "WriteByte")){
         $FileInStream = [System.IO.FileStream]::New($FileIn,[System.IO.FileMode]::Open)
         $FileOutStream = [System.IO.FileStream]::new($FileOut,[System.IO.FileMode]::Create)
 
@@ -67,24 +67,34 @@ function ConvertFrom-EncryptedBin {
         $CryptoStream = [System.Security.Cryptography.CryptoStream]::New($FileInStream, $Decryptor, [System.Security.Cryptography.CryptoStreamMode]::Read)
 
         $ApproxSize = (Get-Item $FileIn).Size
-        Write-Progress -Activity $FileOut -Status 'Decrypting' -PercentComplete 0
+        Write-Progress -Activity $FileOut -Status "Decrypting" -PercentComplete 0
         $n = 0
-        do {
-          try {
-            $Byte = $CryptoStream.ReadByte()
-          } catch {
-            Throw
+
+        $Completed = $False
+        try {
+          do {
+            try {
+              $Byte = $CryptoStream.ReadByte()
+            } catch {
+              Throw
+            }
+            if($Byte -ne -1){
+              $FileOutStream.WriteByte($Byte)
+              $n++
+            }
+            if(($n % 102400) -eq 0){
+              $CurrentSize = (Get-Item $FileOut).Size
+              $PercentComplete = [Math]::Round(((1 - ($ApproxSize - $CurrentSize)/$ApproxSize) * 100), 1)
+              Write-Progress -Activity $FileOut -Status "Decrypting $PercentComplete%" -PercentComplete $PercentComplete
+            }
+          } while ($Byte -ne -1)
+
+          $Completed = $True
+        } finally {
+          if(-not $Completed){
+            rm $FileOut
           }
-          if($Byte -ne -1){
-            $FileOutStream.WriteByte($Byte)
-            $n++
-          }
-          if(($n % 102400) -eq 0){
-            $CurrentSize = (Get-Item $FileOut).Size
-            $PercentComplete = (1 - ($ApproxSize - $CurrentSize)/$ApproxSize) * 100
-            Write-Progress -Activity $FileOut -Status 'Decrypting' -PercentComplete $PercentComplete
-          }
-        } while ($Byte -ne -1)
+        }
 
         try { $FileInStream.Dispose() } catch {}
         try { $FileOutStream.Dispose() } catch {}
