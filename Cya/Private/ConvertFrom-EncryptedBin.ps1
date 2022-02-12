@@ -41,7 +41,7 @@ function ConvertFrom-EncryptedBin {
         try {
           $Byte = $CryptoStream.ReadByte()
         } catch {
-          Throw "Failed to decrypt"
+          Throw "Failed to decrypt, password may be incorrect"
         }
         if($Byte -ne -1){
           $Bytes += $Byte
@@ -55,30 +55,32 @@ function ConvertFrom-EncryptedBin {
     }
 
     if($PsCmdlet.ParameterSetName -eq "FromFile"){
-      $FileInStream = [System.IO.FileStream]::New($FileIn,[System.IO.FileMode]::Open)
-      $FileOutStream = [System.IO.FileStream]::new($FileOut,[System.IO.FileMode]::Create)
+      if($PSCmdlet.ShouldProcess($FileOut, 'WriteByte')){
+        $FileInStream = [System.IO.FileStream]::New($FileIn,[System.IO.FileMode]::Open)
+        $FileOutStream = [System.IO.FileStream]::new($FileOut,[System.IO.FileMode]::Create)
 
-      $IV = New-Object byte[] 16
-      $FileInStream.Read($IV, 0, $IV.Length)
+        $IV = New-Object byte[] 16
+        $FileInStream.Read($IV, 0, $IV.Length)
 
-      $Decryptor = $Csp.CreateDecryptor($KeySha,$IV)
+        $Decryptor = $Csp.CreateDecryptor($KeySha,$IV)
 
-      $CryptoStream = [System.Security.Cryptography.CryptoStream]::New($FileInStream, $Decryptor, [System.Security.Cryptography.CryptoStreamMode]::Read)
+        $CryptoStream = [System.Security.Cryptography.CryptoStream]::New($FileInStream, $Decryptor, [System.Security.Cryptography.CryptoStreamMode]::Read)
 
-      do {
-        try {
-          $Byte = $CryptoStream.ReadByte()
-        } catch {
-          Throw
-        }
-        if($Byte -ne -1){
-          $FileOutStream.WriteByte($Byte)
-        }
-      } while ($Byte -ne -1)
+        do {
+          try {
+            $Byte = $CryptoStream.ReadByte()
+          } catch {
+            Throw
+          }
+          if($Byte -ne -1){
+            $FileOutStream.WriteByte($Byte)
+          }
+        } while ($Byte -ne -1)
 
-      try { $FileInStream.Dispose() } catch {}
-      try { $FileOutStream.Dispose() } catch {}
-      try { $CryptoStream.Dispose() } catch {}
+        try { $FileInStream.Dispose() } catch {}
+        try { $FileOutStream.Dispose() } catch {}
+        try { $CryptoStream.Dispose() } catch {}
+      }
     }
   }
 
