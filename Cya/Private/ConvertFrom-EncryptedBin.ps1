@@ -66,6 +66,9 @@ function ConvertFrom-EncryptedBin {
 
         $CryptoStream = [System.Security.Cryptography.CryptoStream]::New($FileInStream, $Decryptor, [System.Security.Cryptography.CryptoStreamMode]::Read)
 
+        $ApproxSize = (Get-Item $FileIn).Size
+        Write-Progress -Activity $FileOut -Status 'Decrypting' -PercentComplete 0
+        $n = 0
         do {
           try {
             $Byte = $CryptoStream.ReadByte()
@@ -74,6 +77,12 @@ function ConvertFrom-EncryptedBin {
           }
           if($Byte -ne -1){
             $FileOutStream.WriteByte($Byte)
+            $n++
+          }
+          if(($n % 102400) -eq 0){
+            $CurrentSize = (Get-Item $FileOut).Size
+            $PercentComplete = (1 - ($ApproxSize - $CurrentSize)/$ApproxSize) * 100
+            Write-Progress -Activity $FileOut -Status 'Decrypting' -PercentComplete $PercentComplete
           }
         } while ($Byte -ne -1)
 
