@@ -48,8 +48,8 @@ function ConvertFrom-EncryptedBin {
         }
       } while ($Byte -ne -1)
 
-      try { $MemoryStream.Dispose() } catch {}
-      try { $CryptoStream.Dispose() } catch {}
+      $MemoryStream.Dispose()
+      $CryptoStream.Dispose()
 
       [System.Text.Encoding]::UTF8.GetString($Bytes)
     }
@@ -96,9 +96,9 @@ function ConvertFrom-EncryptedBin {
           }
         }
 
-        try { $FileInStream.Dispose() } catch {}
-        try { $FileOutStream.Dispose() } catch {}
-        try { $CryptoStream.Dispose() } catch {}
+        $FileInStream.Dispose()
+        $FileOutStream.Dispose()
+        $CryptoStream.Dispose()
       }
     }
   }

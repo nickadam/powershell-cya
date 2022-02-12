@@ -5,6 +5,8 @@ BeforeAll {
   . (Join-Path $PrivateDirectory 'ConvertTo-MemoryStream.ps1')
   . (Join-Path $PrivateDirectory 'ConvertFrom-MemoryStream.ps1')
   . (Join-Path $PrivateDirectory 'ConvertTo-EncryptedBin.ps1')
+
+  $ProgressPreference='SilentlyContinue'
 }
 
 Describe "ConvertFrom-EncryptedBin" {

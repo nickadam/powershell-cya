@@ -70,9 +70,9 @@ function ConvertTo-EncryptedBin {
           }
         }
 
-        try { $FileInStream.Dispose() } catch {}
-        try { $FileOutStream.Dispose() } catch {}
-        try { $CryptoStream.Dispose() } catch {}
+        $FileInStream.Dispose()
+        $FileOutStream.Dispose()
+        $CryptoStream.Dispose()
       }
     }
 
@@ -92,7 +92,7 @@ function ConvertTo-EncryptedBin {
       # out string
       ConvertFrom-MemoryStream -MemoryStream $MemoryStream -ToBase64
 
-      try { $CryptoStream.Dispose() } catch {}
+      $CryptoStream.Dispose()
     }
   }
 
