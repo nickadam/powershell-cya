@@ -1,5 +1,6 @@
 function ConvertTo-MemoryStream {
   [CmdletBinding()]
+  [OutputType([IO.MemoryStream])]
   param(
     [Parameter(Mandatory)]
     [String]$String,
@@ -7,12 +8,12 @@ function ConvertTo-MemoryStream {
   )
 
   if($FromBase64){
-    $Bytes = [System.Convert]::FromBase64String($String)
+    $Bytes = [Convert]::FromBase64String($String)
   }else{
-    $Bytes = [System.Text.Encoding]::UTF8.GetBytes($String)
+    $Bytes = [Text.Encoding]::UTF8.GetBytes($String)
   }
 
-  $MemoryStream = [System.IO.MemoryStream]::New()
+  $MemoryStream = [IO.MemoryStream]::New()
 
   $Bytes | ForEach-Object {
     $MemoryStream.WriteByte($_)

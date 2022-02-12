@@ -1,8 +1,9 @@
 function ConvertFrom-MemoryStream {
   [CmdletBinding()]
+  [OutputType([String])]
   param(
     [Parameter(Mandatory)]
-    [System.IO.MemoryStream]$MemoryStream,
+    [IO.MemoryStream]$MemoryStream,
     [Switch]$ToBase64
   )
 
@@ -27,8 +28,8 @@ function ConvertFrom-MemoryStream {
   $MemoryStream.Dispose()
 
   if($ToBase64){
-    [System.Convert]::ToBase64String($Bytes)
+    [Convert]::ToBase64String($Bytes)
   }else{
-    [System.Text.Encoding]::UTF8.GetString($Bytes)
+    [Text.Encoding]::UTF8.GetString($Bytes)
   }
 }
