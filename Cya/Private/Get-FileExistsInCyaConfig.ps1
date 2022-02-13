@@ -1,5 +1,5 @@
 function Get-FileExistsInCyaConfig {
-  param($Cipherbundle)
+  param([Parameter(Mandatory)]$Cipherbundle)
   if(-not $Cipherbundle){
     return $False
   }

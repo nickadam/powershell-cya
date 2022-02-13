@@ -154,7 +154,7 @@ function Get-CyaConfig {
 
             # Warn if Protected but a different file exists not in any config
             if((Test-Path $Cipherbundle.FilePath) -and ($ProtectionStatus.Status -eq "Protected")){
-              if(-not (Get-FileExistsInCyaConfig)){
+              if(-not (Get-FileExistsInCyaConfig -Cipherbundle $Cipherbundle)){
                 $MessageFilePath = $Cipherbundle.FilePath
                 $Message = "CyaConfig `"$ConfigName`" file `"$MessageFilePath`" " +
                   "exists and differs from the protected file in the config. " +
