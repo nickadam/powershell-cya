@@ -63,6 +63,24 @@ function Protect-CyaConfig {
   -----------
   CyaConfigs can be supplied through the pipeline.
 
+  .LINK
+  New-CyaConfig
+
+  .LINK
+  Get-CyaConfig
+
+  .LINK
+  Unprotect-CyaConfig
+
+  .LINK
+  Rename-CyaConfig
+
+  .LINK
+  Remove-CyaConfig
+
+  .LINK
+  https://github.com/nickadam/powershell-cya
+
   #>
 
   [CmdletBinding(SupportsShouldProcess)]

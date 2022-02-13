@@ -31,6 +31,24 @@ function Remove-CyaConfig {
   -----------
   Delete all CyaConfigs.
 
+  .LINK
+  New-CyaConfig
+
+  .LINK
+  Get-CyaConfig
+
+  .LINK
+  Protect-CyaConfig
+
+  .LINK
+  Unprotect-CyaConfig
+
+  .LINK
+  Rename-CyaConfig
+
+  .LINK
+  https://github.com/nickadam/powershell-cya
+
   #>
 
   [CmdletBinding(SupportsShouldProcess)]

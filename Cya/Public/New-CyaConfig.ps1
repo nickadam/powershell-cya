@@ -187,6 +187,24 @@ function New-CyaConfig {
   A collection of environment variables can be specified as a hashtable or any
   iterable list of objects with Name and Value.
 
+  .LINK
+  Get-CyaConfig
+
+  .LINK
+  Protect-CyaConfig
+
+  .LINK
+  Unprotect-CyaConfig
+
+  .LINK
+  Rename-CyaConfig
+
+  .LINK
+  Remove-CyaConfig
+
+  .LINK
+  https://github.com/nickadam/powershell-cya
+
   #>
 
   [CmdletBinding(SupportsShouldProcess,

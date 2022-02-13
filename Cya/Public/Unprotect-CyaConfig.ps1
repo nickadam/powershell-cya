@@ -52,6 +52,24 @@ function Unprotect-CyaConfig {
   -----------
   A specific CyaConfig can be specified by name.
 
+  .LINK
+  New-CyaConfig
+
+  .LINK
+  Get-CyaConfig
+
+  .LINK
+  Protect-CyaConfig
+
+  .LINK
+  Rename-CyaConfig
+
+  .LINK
+  Remove-CyaConfig
+
+  .LINK
+  https://github.com/nickadam/powershell-cya
+
   #>
 
   [CmdletBinding(SupportsShouldProcess)]

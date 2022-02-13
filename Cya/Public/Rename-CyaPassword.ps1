@@ -28,6 +28,18 @@ function Rename-CyaPassword {
   -----------
   Rename a CyaPassword.
 
+  .LINK
+  Get-CyaPassword
+
+  .LINK
+  New-CyaPassword
+
+  .LINK
+  Remove-CyaPassword
+
+  .LINK
+  https://github.com/nickadam/powershell-cya
+
   #>
 
   [CmdletBinding(SupportsShouldProcess)]

@@ -80,6 +80,24 @@ function Get-CyaConfig {
   All unprotected items in the current shell (for environment variables)
   and filesystem (for files).
 
+  .LINK
+  New-CyaConfig
+
+  .LINK
+  Protect-CyaConfig
+
+  .LINK
+  Unprotect-CyaConfig
+
+  .LINK
+  Rename-CyaConfig
+
+  .LINK
+  Remove-CyaConfig
+
+  .LINK
+  https://github.com/nickadam/powershell-cya
+
   #>
 
   [CmdletBinding()]

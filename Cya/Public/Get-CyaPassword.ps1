@@ -43,6 +43,19 @@ function Get-CyaPassword {
   Mode                 LastWriteTime         Length Name
   ----                 -------------         ------ ----
   -a---           2/10/2022 10:48 AM            292 Work
+
+  .LINK
+  New-CyaPassword
+
+  .LINK
+  Remove-CyaPassword
+
+  .LINK
+  Rename-CyaPassword
+
+  .LINK
+  https://github.com/nickadam/powershell-cya
+
   #>
 
   [CmdletBinding()]

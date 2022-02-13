@@ -33,6 +33,18 @@ function Remove-CyaPassword {
   -----------
   Delete all CyaPasswords.
 
+  .LINK
+  Get-CyaPassword
+
+  .LINK
+  New-CyaPassword
+
+  .LINK
+  Rename-CyaPassword
+
+  .LINK
+  https://github.com/nickadam/powershell-cya
+
   #>
 
   [CmdletBinding(SupportsShouldProcess)]

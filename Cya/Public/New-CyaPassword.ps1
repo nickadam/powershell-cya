@@ -44,6 +44,18 @@ function New-CyaPassword {
   Inscure way to set a password using plain text string. Don't do this. The
   password will end up in your command history.
 
+  .LINK
+  Get-CyaPassword
+
+  .LINK
+  Remove-CyaPassword
+
+  .LINK
+  Rename-CyaPassword
+
+  .LINK
+  https://github.com/nickadam/powershell-cya
+
   #>
 
   [CmdletBinding(SupportsShouldProcess)]

@@ -27,6 +27,24 @@ function Rename-CyaConfig {
   -----------
   Rename a CyaConfig.
 
+  .LINK
+  New-CyaConfig
+
+  .LINK
+  Get-CyaConfig
+
+  .LINK
+  Protect-CyaConfig
+
+  .LINK
+  Unprotect-CyaConfig
+
+  .LINK
+  Remove-CyaConfig
+
+  .LINK
+  https://github.com/nickadam/powershell-cya
+
   #>
 
   [CmdletBinding(SupportsShouldProcess)]
