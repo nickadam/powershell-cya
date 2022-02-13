@@ -1,10 +1,8 @@
 function Protect-CyaConfig {
   [CmdletBinding()]
   param(
-    $Name,
-
-    [Parameter(ValueFromPipeline)]
-    $CyaConfig
+    [Parameter(ValueFromPipeline, ValueFromPipelineByPropertyName)]
+    [String]$Name
   )
   begin {
     $Configs = @()
@@ -13,17 +11,12 @@ function Protect-CyaConfig {
     $Config = $False
     if($Name){
       $Config = Get-CyaConfig -Name $Name
-    }
-    if($CyaConfig){
-      $Config = $CyaConfig
-    }
-    if($Config){
       $Configs += $Config
     }
   }
   end{
     # nothing provided, get all configs
-    if(-not $CyaConfig -and -not $Name){
+    if(-not $Configs){
       $Configs = Get-CyaConfig
     }
 
