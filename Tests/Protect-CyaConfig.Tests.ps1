@@ -56,6 +56,19 @@ BeforeAll {
 }
 
 Describe "Protect-CyaConfig" {
+  Context "WhatIf switch" {
+    BeforeAll {
+      $results = Protect-CyaConfig -WhatIf | Where{$_.Status -eq 'Protected'}
+      $File1 = Test-Path $TmpFile1Path
+    }
+    It "Should not remove TmpFile1" {
+      $File1 | Should -Be $True
+    }
+    It "Should not remove MYOTHERVAR" {
+      $Env:MYOTHERVAR | Should -Be "my other value"
+    }
+  }
+
   Context "No params" {
     BeforeAll {
       $results = Protect-CyaConfig | Where{$_.Status -eq 'Protected'}

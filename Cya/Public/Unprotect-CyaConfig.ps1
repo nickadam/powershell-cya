@@ -1,5 +1,5 @@
 function Unprotect-CyaConfig {
-  [CmdletBinding()]
+  [CmdletBinding(SupportsShouldProcess)]
   param(
     [String]$Name,
 

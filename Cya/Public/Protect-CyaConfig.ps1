@@ -1,5 +1,5 @@
 function Protect-CyaConfig {
-  [CmdletBinding()]
+  [CmdletBinding(SupportsShouldProcess)]
   param(
     [Parameter(ValueFromPipeline, ValueFromPipelineByPropertyName)]
     [String]$Name
@@ -51,7 +51,9 @@ function Protect-CyaConfig {
           # if the hashes match, remove
           $ProtectionStatus = $Cipherbundle | Get-ProtectionStatus
           if($ProtectionStatus.Status -eq "Unprotected"){
-            [System.Environment]::SetEnvironmentVariable($Variable,"")
+            if($PSCmdlet.ShouldProcess($Variable, 'UnSetEnvironmentVariable')){
+              [Environment]::SetEnvironmentVariable($Variable,"")
+            }
           }
         }
       }

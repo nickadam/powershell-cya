@@ -56,6 +56,20 @@ BeforeAll {
 }
 
 Describe "Unprotect-CyaConfig" {
+  Context "WhatIf Switch" {
+    BeforeAll {
+      Get-CyaConfig | Protect-CyaConfig | Out-Null
+      Unprotect-CyaConfig -WhatIf
+      $File2 = Test-Path $TmpFile2Path
+    }
+    It "Should not add TmpFile2" {
+      $File2 | Should -Be $False
+    }
+    It "Should not add MYVAR" {
+      $Env:MYOTHERVAR | Should -Be $Null
+    }
+  }
+
   Context "No params" {
     BeforeAll {
       Get-CyaConfig | Protect-CyaConfig | Out-Null
