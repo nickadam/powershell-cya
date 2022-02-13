@@ -37,9 +37,9 @@ BeforeAll {
   Mock Read-Host {""} -ParameterFilter { $Prompt -eq "Variable 3 name (Enter when done)" }
   $Status = New-CyaConfig -Name "test"
   $TmpFile1 = New-TemporaryFile
-  (Get-RandomString -Length 1025) | Out-File -Encoding Default -NoNewline $TmpFile1
+  Get-RandomString | Out-File -Encoding Default -NoNewline $TmpFile1
   $TmpFile2 = New-TemporaryFile
-  (Get-RandomString -Length 1025) | Out-File -Encoding Default -NoNewline $TmpFile2
+  Get-RandomString | Out-File -Encoding Default -NoNewline $TmpFile2
   $OriginalPwd = pwd
   cd (Split-Path $TmpFile2)
   Mock Invoke-ChoicePrompt { "File" } -ParameterFilter { $Caption -eq "Config type" }

@@ -84,9 +84,9 @@ Describe "New-CyaConfig" {
   Context "Creating files" {
     BeforeAll {
       $TmpFile1 = New-TemporaryFile
-      (Get-RandomString -Length 1025) | Out-File -Encoding Default -NoNewline $TmpFile1
+      Get-RandomString | Out-File -Encoding Default -NoNewline $TmpFile1
       $TmpFile2 = New-TemporaryFile
-      (Get-RandomString -Length 1025) | Out-File -Encoding Default -NoNewline $TmpFile2
+      Get-RandomString | Out-File -Encoding Default -NoNewline $TmpFile2
       $OriginalPwd = pwd
       cd (Split-Path $TmpFile2)
       Mock Read-Host {ConvertTo-SecureString -String "password" -AsPlainText -Force} -ParameterFilter { $Prompt -eq "Enter new password" }
@@ -114,7 +114,7 @@ Describe "New-CyaConfig" {
   Context "Creating file from argument" {
     BeforeAll {
       $TmpFile = New-TemporaryFile
-      (Get-RandomString -Length 1025) | Out-File -Encoding Default -NoNewline $TmpFile
+      Get-RandomString | Out-File -Encoding Default -NoNewline $TmpFile
       $OriginalPwd = pwd
       cd (Split-Path $TmpFile)
       $FileName = Split-Path $TmpFile -Leaf
@@ -140,7 +140,7 @@ Describe "New-CyaConfig" {
   Context "Creating file from param" {
     BeforeAll {
       $TmpFile = New-TemporaryFile
-      (Get-RandomString -Length 1025) | Out-File -Encoding Default -NoNewline $TmpFile
+      Get-RandomString | Out-File -Encoding Default -NoNewline $TmpFile
       $OriginalPwd = pwd
       cd (Split-Path $TmpFile)
       $FileName = Split-Path $TmpFile -Leaf

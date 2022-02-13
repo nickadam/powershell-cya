@@ -37,7 +37,7 @@ Describe "ConvertTo-Cipherbundle" {
   Context "Pipeline Item, Key param, and Name param with file" {
     BeforeAll {
       $TmpFile = New-TemporaryFile
-      (Get-RandomString -Length 1025) | Out-File -Encoding Default -NoNewline $TmpFile
+      Get-RandomString | Out-File -Encoding Default -NoNewline $TmpFile
 
       $result = $TmpFile | ConvertTo-Cipherbundle -Key "key" -Name "test"
     }

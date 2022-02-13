@@ -42,7 +42,7 @@ Describe "ConvertFrom-Cipherbundle" {
   Context "Pipeline Cipherbundle with file" {
     BeforeAll {
       $TmpFile = New-TemporaryFile
-      $RandomString = Get-RandomString -Length 1025
+      $RandomString = Get-RandomString
       $RandomString | Out-File -Encoding Default -NoNewline $TmpFile
 
       $Cipherbundle = $TmpFile | ConvertTo-Cipherbundle -Key "key" -Name "test"
