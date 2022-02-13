@@ -117,7 +117,7 @@ Describe "Protect-CyaConfig" {
     }
   }
 
-  Context "Files with different contents" {
+  Context "File with different contents" {
     BeforeAll {
       Get-RandomString | Out-File -Encoding Default -NoNewline $TmpFile1Path
       Protect-CyaConfig | Out-Null
@@ -128,6 +128,15 @@ Describe "Protect-CyaConfig" {
     }
   }
 
+  Context "EnvVar with different value" {
+    BeforeAll {
+      $Env:MYVAR = "not my value"
+      Protect-CyaConfig | Out-Null
+    }
+    It "Should not unset MYVAR" {
+      $Env:MYVAR | Should -Be "not my value"
+    }
+  }
 }
 
 AfterAll {
