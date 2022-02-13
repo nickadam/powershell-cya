@@ -74,10 +74,8 @@ function Protect-CyaConfig {
     $Configs = @()
   }
   process {
-    $Config = $False
     if($Name){
-      $Config = Get-CyaConfig -Name $Name
-      $Configs += $Config
+      $Configs += Get-CyaConfig -Name $Name
     }
   }
   end{
