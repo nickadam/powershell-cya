@@ -1,4 +1,70 @@
 function Protect-CyaConfig {
+  <#
+  .SYNOPSIS
+  Deletes unencrypted files and unsets environment variables.
+
+  .DESCRIPTION
+  Each item in the CyaConfig is checked against the current system environment.
+  If there is an environment variables set and the salted hash matches it is
+  unset. If if finds a file at the same filepath and the salted hash matches,
+  the file is deleted. When the salted hash differs a warning is displayed.
+
+  .PARAMETER Name
+  [String] The name of the CyaConfig
+
+  .OUTPUTS
+  [Object] CyaConfig item status
+
+  .NOTES
+    Author: Nick Vissari
+
+  .EXAMPLE
+  Protect-CyaConfig
+
+  Name          : test
+  Type          : File
+  CyaPassword   : Default
+  ProtectOnExit : False
+  Item          : C:\Users\nickadam\test.txt
+  Status        : Protected
+
+
+  Description
+  -----------
+  With no parameters specified, all Items in all CyaConfigs are protected.
+
+  .EXAMPLE
+  Protect-CyaConfig test
+
+  Name          : test
+  Type          : File
+  CyaPassword   : Default
+  ProtectOnExit : False
+  Item          : C:\Users\nickadam\test.txt
+  Status        : Protected
+
+
+  Description
+  -----------
+  A specific CyaConfig can be specified by name.
+
+  .EXAMPLE
+  Get-CyaConfig test | Protect-CyaConfig
+
+  Name          : test
+  Type          : File
+  CyaPassword   : Default
+  ProtectOnExit : False
+  Item          : C:\Users\nickadam\test.txt
+  Status        : Protected
+
+
+  Description
+  -----------
+  CyaConfigs can be supplied through the pipeline.
+
+  #>
+
   [CmdletBinding(SupportsShouldProcess)]
   param(
     [Parameter(ValueFromPipeline, ValueFromPipelineByPropertyName)]
