@@ -11,7 +11,7 @@ $Public = Get-ChildItem -Path (Join-Path  -Path $PSScriptRoot -ChildPath  (Join-
 }
 
 $ExportModule = @{
-    Alias = @()
+    Alias = @('ucya', 'pcya')
     Function = $Public.BaseName
     Variable = @()
 }
@@ -30,6 +30,9 @@ if(-not $Env:CYA_DISABLE_UNPROTECTED_MESSAGE){
     Write-Warning "The items above are Unprotected"
   }
 }
+
+New-Alias ucya -Value Unprotect-CyaConfig -Force
+New-Alias pcya -Value Protect-CyaConfig -Force
 
 $ExecutionContext.SessionState.Module.OnRemove += $OnRemoveScript
 Register-EngineEvent -SourceIdentifier ([System.Management.Automation.PsEngineEvent]::Exiting) -Action $OnRemoveScript
