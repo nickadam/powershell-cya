@@ -1,4 +1,40 @@
 function Remove-CyaPassword {
+  <#
+  .SYNOPSIS
+  Deletes CyaPassword.
+
+  .DESCRIPTION
+  Deletes the CyaPassword specified by name or supplied through the pipeline.
+  If a CyaConfig that makes use of the CyaPassword is found, the processes is
+  aborted and an error is displayed.
+
+  .PARAMETER Name
+  [String] The name of the CyaPassword
+
+  .OUTPUTS
+  [Null]
+
+  .NOTES
+    Author: Nick Vissari
+
+  .EXAMPLE
+  Remove-CyaPassword Default
+
+
+  Description
+  -----------
+  Delete CyaPassword by name.
+
+  .EXAMPLE
+  Get-CyaPassword | Remove-CyaPassword
+
+
+  Description
+  -----------
+  Delete all CyaPasswords.
+
+  #>
+
   [CmdletBinding(SupportsShouldProcess)]
   param(
     [Parameter(Mandatory,

@@ -1,4 +1,34 @@
 function Rename-CyaConfig {
+  <#
+  .SYNOPSIS
+  Renames a CyaConfig.
+
+  .DESCRIPTION
+  Renames a CyaConfig. If a conflicting name exists the process is aborted and
+  an error message is displayed.
+
+  .PARAMETER Name
+  [String] The name of the CyaConfig
+
+  .PARAMETER NewName
+  [String] The desired new name of the CyaConfig
+
+  .OUTPUTS
+  [Null]
+
+  .NOTES
+    Author: Nick Vissari
+
+  .EXAMPLE
+  Rename-CyaConfig sample sample2
+
+
+  Description
+  -----------
+  Rename a CyaConfig.
+
+  #>
+
   [CmdletBinding(SupportsShouldProcess)]
   param(
     [Parameter(Mandatory)]

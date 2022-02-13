@@ -1,4 +1,35 @@
 function Rename-CyaPassword {
+  <#
+  .SYNOPSIS
+  Renames a CyaPassword.
+
+  .DESCRIPTION
+  Renames a CyaPassword. If a conflicting name exists the process is aborted and
+  an error message is displayed. Any CyaConfigs using the old CyaPassword name
+  will be updated to use the new name.
+
+  .PARAMETER Name
+  [String] The name of the CyaPassword
+
+  .PARAMETER NewName
+  [String] The desired new name of the CyaPassword
+
+  .OUTPUTS
+  [Null]
+
+  .NOTES
+    Author: Nick Vissari
+
+  .EXAMPLE
+  Rename-CyaPassword Default OldDefault
+
+
+  Description
+  -----------
+  Rename a CyaPassword.
+
+  #>
+
   [CmdletBinding(SupportsShouldProcess)]
   param(
     [Parameter(Mandatory)]

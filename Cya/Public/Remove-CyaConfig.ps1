@@ -1,4 +1,38 @@
 function Remove-CyaConfig {
+  <#
+  .SYNOPSIS
+  Deletes CyaConfigs.
+
+  .DESCRIPTION
+  Deletes the CyaConfig specified by name or supplied through the pipeline.
+
+  .PARAMETER Name
+  [String] The name of the CyaConfig
+
+  .OUTPUTS
+  [Null]
+
+  .NOTES
+    Author: Nick Vissari
+
+  .EXAMPLE
+  Remove-CyaConfig test
+
+
+  Description
+  -----------
+  Delete CyaConfig by name.
+
+  .EXAMPLE
+  Get-CyaConfig | Remove-CyaConfig
+
+
+  Description
+  -----------
+  Delete all CyaConfigs.
+
+  #>
+
   [CmdletBinding(SupportsShouldProcess)]
   param(
     [Parameter(Mandatory,
