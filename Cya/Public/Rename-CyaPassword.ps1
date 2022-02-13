@@ -23,7 +23,7 @@ function Rename-CyaPassword {
     $CyaConfig = $File | Get-Content | ConvertFrom-Json
     if($CyaConfig.CyaPassword -eq $Name){
       $CyaConfig.CyaPassword = $NewName
-      $CyaConfig | ConvertTo-Json | Out-File -Encoding Default $File
+      $CyaConfig | ConvertTo-Json | Out-File -Encoding Default $File.FullName
     }
   }
 
