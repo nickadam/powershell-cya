@@ -114,7 +114,7 @@ Describe "New-CyaConfig" {
   Context "Creating file from argument" {
     BeforeAll {
       $TmpFile = New-TemporaryFile
-      Get-RandomString | Out-File -Encoding Default -NoNewline $TmpFile
+      $n=0; $d=while($n -lt 150){$n++; Get-Random}; ($d * 100) | Out-File -Encoding Default $TmpFile
       $OriginalPwd = pwd
       cd (Split-Path $TmpFile)
       $FileName = Split-Path $TmpFile -Leaf
@@ -159,6 +159,67 @@ Describe "New-CyaConfig" {
       Remove-Item $CYAPATH -Force -Recurse
       Remove-Item $TmpFile
       cd $OriginalPwd
+    }
+  }
+
+  Context "Creating envvar from hashtable" {
+    BeforeAll {
+      $TestVars = @{
+        "MYVAR" = "my value"
+        "MYOTHERVAR" = "my other value"
+      }
+      Mock Read-Host {ConvertTo-SecureString -String "password" -AsPlainText -Force} -ParameterFilter { $Prompt -eq "Enter new password" }
+      Mock Read-Host {ConvertTo-SecureString -String "password" -AsPlainText -Force} -ParameterFilter { $Prompt -eq "Confirm new password" }
+      $Status = New-CyaConfig -Name "test" -EnvVarCollection $TestVars
+    }
+    It "Should create two items in one config" {
+      $Status.Length | Should -Be 2
+    }
+    It "Should put create a CyaConfig file" {
+      (Get-Content (Join-Path $ConfigsPath "test") | ConvertFrom-Json).Type | Should -Be "EnvVar"
+    }
+    AfterAll {
+      Remove-Item $CYAPATH -Force -Recurse
+    }
+  }
+
+  Context "Creating from list of set environment variables via pipeline" {
+    BeforeAll {
+      $Env:MYVAR = "my value"
+      $Env:MYOTHERVAR = "my other value"
+      Mock Read-Host {ConvertTo-SecureString -String "password" -AsPlainText -Force} -ParameterFilter { $Prompt -eq "Enter new password" }
+      Mock Read-Host {ConvertTo-SecureString -String "password" -AsPlainText -Force} -ParameterFilter { $Prompt -eq "Confirm new password" }
+      $Status = "MYVAR", "MYOTHERVAR" | New-CyaConfig -Name "test"
+    }
+    It "Should create two items in one config" {
+      $Status.Length | Should -Be 2
+    }
+    It "Should put create a CyaConfig file" {
+      (Get-Content (Join-Path $ConfigsPath "test") | ConvertFrom-Json).Type | Should -Be "EnvVar"
+    }
+    AfterAll {
+      $Env:MYVAR = ""
+      $Env:MYOTHERVAR = ""
+      Remove-Item $CYAPATH -Force -Recurse
+    }
+  }
+
+  Context "Creating from list of set environment variables via pipeline" {
+    BeforeAll {
+      Mock Read-Host {ConvertTo-SecureString -String "password" -AsPlainText -Force} -ParameterFilter { $Prompt -eq "Enter new password" }
+      Mock Read-Host {ConvertTo-SecureString -String "password" -AsPlainText -Force} -ParameterFilter { $Prompt -eq "Confirm new password" }
+      $Status = New-CyaConfig -Name "test" -EnvVarName "MYVAR" -EnvVarValue "my value"
+    }
+    It "Should create two items in one config" {
+      ($Status | measure).Count | Should -Be 1
+    }
+    It "Should put create a CyaConfig file" {
+      (Get-Content (Join-Path $ConfigsPath "test") | ConvertFrom-Json).Type | Should -Be "EnvVar"
+    }
+    AfterAll {
+      $Env:MYVAR = ""
+      $Env:MYOTHERVAR = ""
+      Remove-Item $CYAPATH -Force -Recurse
     }
   }
 

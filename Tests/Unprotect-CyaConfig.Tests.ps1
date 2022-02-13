@@ -38,7 +38,7 @@ BeforeAll {
   $Status = New-CyaConfig -Name "test"
   $TmpFile1 = New-TemporaryFile
   $TmpFile1Path = $TmpFile1.ToString()
-  Get-RandomString | Out-File -Encoding Default -NoNewline $TmpFile1
+  $n=0; $d=while($n -lt 150){$n++; Get-Random}; ($d * 100) | Out-File -Encoding Default -NoNewline $TmpFile1
   $TmpFile2 = New-TemporaryFile
   $TmpFile2Path = $TmpFile2.ToString()
   Get-RandomString | Out-File -Encoding Default -NoNewline $TmpFile2

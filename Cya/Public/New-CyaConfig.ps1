@@ -327,12 +327,6 @@ function New-CyaConfig {
           "Value" = $EnvVarValue
         }
       }
-      if($EnvVarName -and $EnvVarSecureString){
-        $EnvVarCollection = [PSCustomObject]@{
-          "Name" = $EnvVarName
-          "Value" = Get-SecureStringText -SecureString $EnvVarSecureString
-        }
-      }
 
       # no EnvVar specified, prompt user
       if(-not $EnvVarCollection){
@@ -351,7 +345,7 @@ function New-CyaConfig {
 
           $Message = "$EnvVarName value"
 
-          # check if environment varialbe is currently set
+          # check if environment variable is currently set
           $SetValue = Get-EnvVarValueByName -Name $EnvVarName
           if($SetValue){
             $Message = "$EnvVarName value [$SetValue]"

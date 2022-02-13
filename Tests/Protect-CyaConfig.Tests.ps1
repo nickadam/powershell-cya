@@ -41,7 +41,8 @@ BeforeAll {
   Get-RandomString | Out-File -Encoding Default -NoNewline $TmpFile1
   $TmpFile2 = New-TemporaryFile
   $TmpFile2Path = $TmpFile2.ToString()
-  Get-RandomString | Out-File -Encoding Default -NoNewline $TmpFile2
+  $TmpFile2Content = Get-RandomString
+  $TmpFile2Content | Out-File -Encoding Default -NoNewline $TmpFile2
   $OriginalPwd = pwd
   cd (Split-Path $TmpFile2)
   Mock Invoke-ChoicePrompt { "File" } -ParameterFilter { $Caption -eq "Config type" }
