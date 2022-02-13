@@ -6,7 +6,7 @@ function Get-Sha256Hash {
   if($File){
     $hash = (Get-FileHash $File).Hash.toLower()
     if($Salt){
-      $String = $Salt + $String
+      $String = $Salt + $hash
       $hashBytes = $Sha256.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($String))
       $hash = [System.BitConverter]::ToString($hashBytes)
       $hash = $hash.toLower() -replace "-", ""

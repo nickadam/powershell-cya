@@ -116,6 +116,18 @@ Describe "Protect-CyaConfig" {
       ($results | where{$_.Type -eq "EnvVar"}).Length | Should -Be 2
     }
   }
+
+  Context "Files with different contents" {
+    BeforeAll {
+      Get-RandomString | Out-File -Encoding Default -NoNewline $TmpFile1Path
+      Protect-CyaConfig | Out-Null
+      $result = Test-Path $TmpFile1Path
+    }
+    It "Should not remove the file" {
+      $result | Should -Be $True
+    }
+  }
+
 }
 
 AfterAll {
