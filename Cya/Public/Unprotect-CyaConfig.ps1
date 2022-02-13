@@ -1,10 +1,63 @@
 function Unprotect-CyaConfig {
+  <#
+  .SYNOPSIS
+  Decrypts files and sets environment variables.
+
+  .DESCRIPTION
+  Each item in the CyaConfig is either set as an environment variable or
+  decrypted to the filepath defined. If a different file exists at the target
+  filepath the process is aborted and an error is presented.
+
+  .PARAMETER Name
+  [String] The name of the CyaConfig
+
+  .PARAMETER Password
+  [SecureString] The password to decrypt the CyaPassword
+
+  .OUTPUTS
+  [Object] CyaConfig item status
+
+  .NOTES
+    Author: Nick Vissari
+
+  .EXAMPLE
+  Unprotect-CyaConfig
+  Enter password for CyaPassword "Default": *********
+
+  Name          : test
+  Type          : File
+  CyaPassword   : Default
+  ProtectOnExit : False
+  Item          : C:\Users\nickadam\test.txt
+  Status        : Unprotected
+
+
+  Description
+  -----------
+  With no parameters specified, all Items in all CyaConfigs are unprotected.
+
+  .EXAMPLE
+  Unprotect-CyaConfig test
+  Enter password for CyaPassword "Default": *********
+
+  Name          : test
+  Type          : File
+  CyaPassword   : Default
+  ProtectOnExit : False
+  Item          : C:\Users\nickadam\test.txt
+  Status        : Unprotected
+
+
+  Description
+  -----------
+  A specific CyaConfig can be specified by name.
+
+  #>
+
   [CmdletBinding(SupportsShouldProcess)]
   param(
+    [Parameter(ValueFromPipeline, ValueFromPipelineByPropertyName)]
     [String]$Name,
-
-    [Parameter(ValueFromPipeline)]
-    [Object]$CyaConfig,
 
     [SecureString]$Password
   )
@@ -12,20 +65,13 @@ function Unprotect-CyaConfig {
     $Configs = @()
   }
   process {
-    $Config = $False
     if($Name){
-      $Config = Get-CyaConfig -Name $Name
-    }
-    if($CyaConfig){
-      $Config = $CyaConfig
-    }
-    if($Config){
-      $Configs += $Config
+      $Configs += Get-CyaConfig -Name $Name
     }
   }
   end{
     # nothing provided, get all configs
-    if(-not $CyaConfig -and -not $Name){
+    if(-not $Configs){
       $Configs = Get-CyaConfig
     }
 
