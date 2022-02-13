@@ -62,10 +62,10 @@ Describe "Get-CyaConfig" {
       $results.Length | Should -Be 2
     }
     It "Should return one file type summary objects" {
-      ($results | where{$_.Type -eq "File"}).Length | Should -Be 1
+      ($results | where{$_.Type -eq "File"} | measure).Count | Should -Be 1
     }
     It "Should return one envvar type summary objects" {
-      ($results | where{$_.Type -eq "EnvVar"}).Length | Should -Be 1
+      ($results | where{$_.Type -eq "EnvVar"} | measure).Count | Should -Be 1
     }
   }
 
@@ -74,13 +74,13 @@ Describe "Get-CyaConfig" {
       $results = Get-CyaConfig test2
     }
     It "Should return one summary objects" {
-      $results.Length | Should -Be 1
+      ($results | measure).Count | Should -Be 1
     }
     It "Should return one file type summary objects" {
-      ($results | where{$_.Type -eq "File"}).Length | Should -Be 1
+      ($results | where{$_.Type -eq "File"} | measure).Count | Should -Be 1
     }
     It "Should return zero envvar type summary objects" {
-      ($results | where{$_.Type -eq "EnvVar"}).Length | Should -Be 0
+      ($results | where{$_.Type -eq "EnvVar"} | measure).Count | Should -Be 0
     }
   }
 
@@ -92,10 +92,10 @@ Describe "Get-CyaConfig" {
       $results.Length | Should -Be 2
     }
     It "Should return one file type item object" {
-      ($results | where{$_.Type -eq "File"}).Length | Should -Be 1
+      ($results | where{$_.Type -eq "File"} | measure).Count | Should -Be 1
     }
     It "Should return zero envvar type item object" {
-      ($results | where{$_.Type -eq "EnvVar"}).Length | Should -Be 1
+      ($results | where{$_.Type -eq "EnvVar"} | measure).Count | Should -Be 1
     }
   }
 
@@ -107,10 +107,10 @@ Describe "Get-CyaConfig" {
       $results.Length | Should -Be 4
     }
     It "Should return one file type item object" {
-      ($results | where{$_.Status -eq "Unprotected"}).Length | Should -Be 2
+      ($results | where{$_.Status -eq "Unprotected"} | measure).Count | Should -Be 2
     }
     It "Should return zero envvar type item object" {
-      ($results | where{$_.Status -eq "Protected"}).Length | Should -Be 2
+      ($results | where{$_.Status -eq "Protected"} | measure).Count | Should -Be 2
     }
   }
 }
