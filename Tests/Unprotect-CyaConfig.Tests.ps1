@@ -145,6 +145,16 @@ Describe "Unprotect-CyaConfig" {
       $Env:MYOTHERVAR | Should -Be "my other value"
     }
   }
+
+  Context "Conflicting file" {
+    BeforeAll {
+      Get-CyaConfig | Protect-CyaConfig | Out-Null
+      Get-RandomString | Out-File -Encoding Default -NoNewline $TmpFile1Path
+    }
+    It "Should throw" {
+      { Unprotect-CyaConfig } | Should -Throw
+    }
+  }
 }
 
 AfterAll {
