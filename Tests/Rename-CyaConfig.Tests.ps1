@@ -97,6 +97,16 @@ Describe "Rename-CyaConfig" {
       $Bin2File | Should -Be $True
     }
   }
+
+  Context "Position 0 and 1 conflict" {
+    It "Should throw" {
+      { Rename-CyaConfig test othertest2 } | Should -Throw
+    }
+    It "Should not rename the old config file name" {
+      $ConfigFile = Test-Path (Join-Path $ConfigsPath "test")
+      $ConfigFile | Should -Be $True
+    }
+  }
 }
 
 AfterAll {
