@@ -6,7 +6,7 @@ function Get-FileExistsInCyaConfig {
   Get-CyaConfigPath |
     Get-ChildItem |
     ForEach-Object {
-      Get-Content $_ |
+      Get-Content $_.FullName |
       ConvertFrom-Json |
       Where-Object {$_.Type -eq "File"} |
       ForEach-Object {
