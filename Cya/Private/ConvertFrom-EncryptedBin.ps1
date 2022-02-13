@@ -94,7 +94,7 @@ function ConvertFrom-EncryptedBin {
           $Completed = $True
         } finally {
           if(-not $Completed){
-            rm $FileOut
+            Remove-Item $FileOut
             Throw "Decryption failed"
           }
         }

@@ -192,7 +192,7 @@ function New-CyaConfig {
   [CmdletBinding(SupportsShouldProcess,
   DefaultParameterSetName = "SomethingFromPipeline")]
   param(
-    [Parameter(Mandatory)]
+    [Parameter(Position=0, Mandatory)]
     [String]$Name,
 
     [Parameter(Mandatory,
