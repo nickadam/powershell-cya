@@ -1,8 +1,9 @@
 # PowerShell-CYA
-Ciphertext Your Assets
 
-Storing credentials in plain text files is generally considered a bad idea. But
-chances are, if you work in DevOps, you may have a few credential files on your
+## Ciphertext Your Assets
+
+Storing credentials in plain text is generally considered a bad idea. But
+chances are, if you work in DevOps, you have a few credential files on your
 system. Or perhaps you store your secrets as environment variables.
 
 A significant vector in supply chain attacks leverages credential stealing
@@ -26,9 +27,11 @@ PS > Unprotect-CyaConfig AWSTest
 Enter password for CyaPassword "Default": *********
 ```
 
+
 ## Quick start
 
 ### Install CYA
+
 ```
 Install-Module Cya
 ```
@@ -86,9 +89,10 @@ Status        : Protected
 ```
 
 You can configure CYA to automatically delete unencrypted files when you exit
-PowerShell using the `-ProtectOnExit` flag. And when you exit PowerShell, or
-remove the Module, the file will be deleted. Keep in mind you have to exit
-cleanly using the `exit` command or `ctrl + d` (Linux) for this to work.
+PowerShell by setting the `-ProtectOnExit` parameter to `$True`. When you exit
+PowerShell, or remove the Module, the file will be deleted. Keep in mind, you
+have to exit cleanly using the `exit` command or `ctrl + d` (Linux) for this to
+work.
 
 ```
 PS > Get-ChildItem | New-CyaConfig -Name sample -ProtectOnExit $true
@@ -119,13 +123,12 @@ Unprotect-CyaConfig
 Protect-CyaConfig
 ```
 
-The alias `ucya` and `pcya` are exported for convenience
+The aliases `ucya` and `pcya` are available for convenience.
 ```
 ucya
 [... do what you need to do ...]
 pcya
 ```
-
 
 
 ## Automatic warnings
@@ -144,12 +147,13 @@ CYA supports using different passwords on different CyaConfigs using the
 use "Default" by default.
 
 ## Security
+
 CyaConfigs and CyaPasswords are encrypted using AES-256-CBC and can be moved to
 any system. Your password is all that's needed to decrypt (so make it a good one).
 
 The contents of files and environment variable values are validated using a salted
-SHA256 hash. If you unprotect a file and modify it, the file's hash no longer
-matches the hash stored in the config. CYA will not delete the file and will
+SHA256 hash. If you unprotect a file and modify it, the file's hash will no longer
+match the hash stored in the config. CYA will not delete the file and will
 instead show a warning that the file path conflicts. If you wish to protect a
 modified file, use `New-CyaConfig` again.
 
@@ -161,11 +165,17 @@ by setting the environment variable `CYAPATH` to you desired location. You may
 want to use a cloud synced folder or any location that you can backup. Or you
 can just backup the defualt `.cya` folder.
 
+The `.cya` folder contains three subfolders:
+- `configs` stores the configs, either EnvVar (environment variable) or File.
+- `passwords` stores the encrypted keys to the configs you decrypt with your password.
+- `bins` stores the encrypted files
+
 ## Modifying CyaConfigs
 
 Configs and Passwords in CYA are largely immutable but that doesn't mean you
 can't change things. For example, if you want to change your password, you can
 follow these steps to create a new CyaPassword, new CyaConfig, and remove the old.
+
 ```
 Rename-CyaPassword -Name Default -NewName OldDefault
 
@@ -185,13 +195,28 @@ Remove-CyaConfig -Name OldMyConfig
 Remove-CyaPassword -Name OldDefault
 ```
 
+Or, if you're comfortable, you could make some trivial changes to the config
+files directly, they are just JSON files. Changing the path to a file, or name
+of a variable won't break anything.
+
 ## More help
+
 Help documentation is available for each function in CYA.
+
 ```
 Help New-CyaConfig
 ```
 
+
 ## Development
+
+### Roadmap
+- Change password
+- Change path
+- Change encrypted file contents
+- Change variable name
+- Change variable value
+
 ### Running tests
 
 Tests are written in the [pester](https://pester.dev/) test framework.
@@ -218,20 +243,25 @@ Find-Package ReportGenerator -ProviderName "nuget" -Source "https://nuget.org/ap
 ```
 
 Identify the location of the relevant ReportGenerator.exe. In my case:
+
 ```
 $RG="$LOCALAPPDATA\PackageManagement\NuGet\Packages\ReportGenerator.5.0.4\tools\net6.0\ReportGenerator.exe"
 ```
 
 Generate a `coverage.xml` file with pester.
+
 ```
 Invoke-Pester -CodeCoverage ".\Cya\*" -CodeCoverageOutputFileFormat JaCoCo
 ```
 
 Generate code coverage report pages.
+
 ```
 & $RG -reports:coverage.xml -targetdir:.\Coverage -sourcedirs:.\Cya
 ```
+
 Review the beautiful report.
+
 ```
 start .\Coverage\index.html
 ```
