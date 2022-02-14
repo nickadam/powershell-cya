@@ -33,7 +33,7 @@ Enter password for CyaPassword "Default": *********
 ### Install CYA
 
 ```
-Install-Module Cya
+Install-Module CYA
 ```
 
 Once installed the following functions are exported and available.
