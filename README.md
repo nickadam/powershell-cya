@@ -210,13 +210,6 @@ Help New-CyaConfig
 
 ## Development
 
-### Roadmap
-- Change password
-- Change path
-- Change encrypted file contents
-- Change variable name
-- Change variable value
-
 ### Running tests
 
 Tests are written in the [pester](https://pester.dev/) test framework.
