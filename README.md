@@ -224,7 +224,7 @@ Invoke-Pester
 ### Static code analysis
 ```
 Install-Module PSScriptAnalyzer
-Invoke-ScriptAnalyzer -Recurse .\Cya\
+Invoke-ScriptAnalyzer -Recurse .\CYA\
 ```
 
 ### Code coverage reports
@@ -244,13 +244,13 @@ $RG="$LOCALAPPDATA\PackageManagement\NuGet\Packages\ReportGenerator.5.0.4\tools\
 Generate a `coverage.xml` file with pester.
 
 ```
-Invoke-Pester -CodeCoverage ".\Cya\*" -CodeCoverageOutputFileFormat JaCoCo
+Invoke-Pester -CodeCoverage ".\CYA\*" -CodeCoverageOutputFileFormat JaCoCo
 ```
 
 Generate code coverage report pages.
 
 ```
-& $RG -reports:coverage.xml -targetdir:.\Coverage -sourcedirs:.\Cya
+& $RG -reports:coverage.xml -targetdir:.\Coverage -sourcedirs:.\CYA
 ```
 
 Review the beautiful report.
