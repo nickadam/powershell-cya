@@ -135,7 +135,7 @@ pcya
 
 CYA presents a warning if any config items are unprotected when the CYA module
 loads. You can choose to see this warning every time you open a shell by adding
-`Import-Module Cya` to your [PowerShell Profile](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_profiles?view=powershell-7.2).
+`Import-Module CYA` to your [PowerShell Profile](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_profiles?view=powershell-7.2).
 
 You can also suppress these warnings by setting the environment variable
 `CYA_DISABLE_UNPROTECTED_MESSAGE` to `$True`.
